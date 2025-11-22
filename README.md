@@ -15,7 +15,8 @@ A ComfyUI plugin based on **HunyuanVideo-1.5**, offering both simplified and com
 ## 📦 Installation
 
 ### Step 1: Install Dependencies
-Install required libraries from `requirements.txt`:  `pip install -r requirements.txt`
+1. Install required libraries from `requirements.txt`:  `pip install -r requirements.txt`
+2. Flash Attention: It's recommended to install Flash Attention for faster inference and reduced GPU memory consumption. Detailed installation instructions are available at Flash Attention.
 ### Step 2: Download Models
 Choose one of the following methods to download the model files (including `hunyuanvideo-1.5` model, `text_encoder`, and `vision_encoder`):
 
