@@ -21,7 +21,7 @@ if current_dir not in sys.path:
 
 
 
-
+import comfy.utils
 import torch
 import json
 import loguru
@@ -163,7 +163,7 @@ class HyVideo15T2VSampler:
         
         if create_sr_pipeline:
             sr_version = TRANSFORMER_VERSION_TO_SR_VERSION[hunyuanvideo_model_config["transformer_version"]]
-            sr_pipeline = pipeline.create_sr_pipeline(hunyuanvideo_model_config["model_path"], sr_version, transformer_dtype=dtype_options[hunyuanvideo_model_config["transformer_dtype"]], device=device)
+            sr_pipeline = pipeline.create_sr_pipeline(os.path.join(hunyuanvideo_model_config["model_path"], "upscale_models", "hyvideo15"), sr_version, transformer_dtype=dtype_options[hunyuanvideo_model_config["transformer_dtype"]], device=device)
             pipeline.sr_pipeline = sr_pipeline
             
         os.environ['T2V_REWRITE_BASE_URL'] = prompt_rewrite_base_url
@@ -288,7 +288,7 @@ class HyVideo15I2VSampler:
         
         if create_sr_pipeline:
             sr_version = TRANSFORMER_VERSION_TO_SR_VERSION[hunyuanvideo_model_config["transformer_version"]]
-            sr_pipeline = pipeline.create_sr_pipeline(hunyuanvideo_model_config["model_path"], sr_version, transformer_dtype=dtype_options[hunyuanvideo_model_config["transformer_dtype"]], device=device)
+            sr_pipeline = pipeline.create_sr_pipeline(os.path.join(hunyuanvideo_model_config["model_path"], "upscale_models", "hyvideo15"), sr_version, transformer_dtype=dtype_options[hunyuanvideo_model_config["transformer_dtype"]], device=device)
             pipeline.sr_pipeline = sr_pipeline
         
         pil_image  = tensor_to_pil(reference_image)
@@ -330,9 +330,9 @@ class HyVideo15ModelLoader:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "model_path": ("STRING",{"default": "","tooltip": "1. If you have already manually downloaded the model to your directory, specify the model folder path hyvideo-1.5 here. 2. If not specified, it will be automatically downloaded to the default folder for continued use."}),
             },
             "optional": {
+                "model_path": ("STRING",{"default": "","tooltip": "1. If you have already manually downloaded the model to your directory, specify the model folder path hyvideo-1.5 here. 2. If not specified, it will be automatically downloaded to the default folder for continued use."}),
                 "attn_mode": (["flash","ptm_sparse_attn","flash3",], {"default": "flash"}),
                 "byt5_max_length": ("INT",{"default": 256}),
                 "vision_encoder_type": ("STRING",{"default": "siglip"}),
@@ -374,10 +374,8 @@ class HyVideo15ModelLoader:
             else:
                 flow_shift = 7.0
         if model_path == "":
-            model_path = folder_paths.get_folder_paths("hyvideo-1.5")
-        if len(os.listdir(model_path)) == 0:
-            self._download(model_path,hf_token)
-            
+            self._download(hf_token)
+            model_path = folder_paths.models_dir
         
         if enable_group_offloading is None:
             assert enable_offloading is None
@@ -391,7 +389,7 @@ class HyVideo15ModelLoader:
         else:
             device = torch.device(device_opt)
 
-        byt5_kwargs, prompt_format = HunyuanVideo_1_5_Pipeline._load_byt5(model_path, True, byt5_max_length, device=device)
+        byt5_kwargs, prompt_format = HunyuanVideo_1_5_Pipeline._load_byt5(os.path.join(model_path, "text_encoders", "hyvideo15"), True, byt5_max_length, device=device)
         scheduler = FlowMatchDiscreteScheduler(
             shift=flow_shift,
             reverse=True,
@@ -401,7 +399,7 @@ class HyVideo15ModelLoader:
         vision_encoder = VisionEncoder(
             vision_encoder_type=vision_encoder_type,
             vision_encoder_precision=vision_encoder_precision,
-            vision_encoder_path=os.path.join(model_path, "vision_encoder/siglip"),
+            vision_encoder_path=os.path.join(model_path, "clip_vision", "hyvideo15", "siglip"),
             processor_type=None,
             processor_path=None,
             output_key=None,
@@ -412,7 +410,7 @@ class HyVideo15ModelLoader:
         text_encoder = TextEncoder(
             text_encoder_type=text_encoder_type,
             tokenizer_type=text_encoder_tokenizer_type,
-            text_encoder_path=os.path.join(model_path, "text_encoder/llm"),
+            text_encoder_path=os.path.join(model_path, "text_encoder", "hyvideo15", "llm"),
             max_length=text_encoder_max_length,
             text_encoder_precision=text_encoder_precision,
             prompt_template=PROMPT_TEMPLATE['li-dit-encode-image-json'],
@@ -426,13 +424,13 @@ class HyVideo15ModelLoader:
         )
         text_encoder_2 = None
         
-        vae = hunyuanvideo_15_vae.AutoencoderKLConv3D.from_pretrained(os.path.join(model_path, "vae")).to(device)
+        vae = hunyuanvideo_15_vae.AutoencoderKLConv3D.from_pretrained(os.path.join(model_path, "vae", "hyvideo15")).to(device)
         
         
         transformer_version = f'{resolution}_{task}'
         
         
-        transformer = HunyuanVideo_1_5_DiffusionTransformer.from_pretrained(os.path.join(model_path, "transformer",transformer_version), torch_dtype=dtype_options[transformer_dtype]).to(device)
+        transformer = HunyuanVideo_1_5_DiffusionTransformer.from_pretrained(os.path.join(model_path, "diffusion_models", "hyvideo15", transformer_version), torch_dtype=dtype_options[transformer_dtype]).to(device)
         transformer.set_attn_mode(attn_mode)
         
         if enable_group_offloading:
@@ -459,20 +457,59 @@ class HyVideo15ModelLoader:
         }
         return (out_put,)
 
-    def _download(self,model_path,hf_token):
-        cmd_list = [
-            f"hf download tencent/HunyuanVideo-1.5 --local-dir {model_path}",
-            f"hf download Qwen/Qwen2.5-VL-7B-Instruct --local-dir {model_path}/text_encoder/llm",
-            f"hf download google/byt5-small --local-dir {model_path}/text_encoder/byt5-small",
-            f"modelscope download --model AI-ModelScope/Glyph-SDXL-v2 --local_dir {model_path}/text_encoder/Glyph-SDXL-v2",
-            f"hf download black-forest-labs/FLUX.1-Redux-dev --local-dir {model_path}/vision_encoder/siglip --token {hf_token}"
-        ]
-        for cmd in cmd_list:
-            self._cmd(cmd)
+    def _download(self, hf_token):
+        path = os.path.join(folder_paths.models_dir, "upscale_models", "hyvideo15")
+        if not os.path.exists(path):
+            tmp_path = folder_paths.get_temp_directory()
+            self._cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"upsampler/*\" --local-dir {tmp_path}")
+            self._cmd(f"mv {tmp_path}/upsampler {path}")
+
+        path = os.path.join(folder_paths.models_dir, "diffusion_models", "hyvideo15")
+        if not os.path.exists(path):
+            tmp_path = folder_paths.get_temp_directory()
+            self._cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"transformer/*\" --local-dir {tmp_path}")
+            self._cmd(f"mv {tmp_path}/transformer {path}")
+        
+        path = os.path.join(folder_paths.models_dir, "vae", "hyvideo15")
+        if not os.path.exists(path):
+            tmp_path = folder_paths.get_temp_directory()
+            self._cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"vae/*\" --local-dir {tmp_path}")
+            self._cmd(f"mv {tmp_path}/vae {path}")
+
+        path = os.path.join(folder_paths.models_dir, "text_encoders", "hyvideo15", "llm")
+        if not os.path.exists(path):
+            os.makedirs(path, exist_ok=True)
+            self._cmd(f"hf download Qwen/Qwen2.5-VL-7B-Instruct --local-dir {path}")
+        
+        path = os.path.join(folder_paths.models_dir, "clip_vision", "hyvideo15", "siglip")
+        if not os.path.exists(path):
+            os.makedirs(path, exist_ok=True)
+            self._cmd(f"hf download black-forest-labs/FLUX.1-Redux-dev --local-dir {path} --token {hf_token}")
+
+        path = os.path.join(folder_paths.models_dir, "text_encoders", "hyvideo15")
+        byt5_path = os.path.join(path, "byt5-small")
+        glyph_path = os.path.join(path, "Glyph-SDXL-v2")
+        if not os.path.exists(byt5_path):
+            self._cmd(f"hf download google/byt5-small --local-dir {path}")
+        if not os.path.exists(glyph_path):
+            self._cmd(f"modelscope download --model AI-ModelScope/Glyph-SDXL-v2 --local_dir {path}")
+
         
     def _cmd(self,cmd):
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True,check=True)
-        
+    
+    def _ensure_directories(path_list):
+        for path in path_list:
+            if not os.path.exists(path):
+                os.makedirs(path)
+
+    def get_model_dir_path(model_dir):
+        all_paths = folder_paths.get_folder_paths(model_dir)
+        for path in all_paths:
+            if "ComfyUI/models" in path.replace("\\", "/"):
+                return path
+        return all_paths[0] if all_paths else ""
+
 NODE_CLASS_MAPPINGS = {
     "HyVideo15T2VSampler": HyVideo15T2VSampler,
     "HyVideo15I2VSampler": HyVideo15I2VSampler,

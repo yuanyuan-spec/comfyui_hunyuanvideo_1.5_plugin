@@ -34,7 +34,7 @@
         "Node name for S&R": "HyVideo15ModelLoader"
       },
       "widgets_values": [
-        "/yourdir",
+        "",
         "flash",
         256,
         "siglip",

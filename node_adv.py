@@ -86,9 +86,13 @@ dtype_options = {
     "int64": torch.int64,
 }
 
+def run_cmd(cmd):
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True,check=True)
+    return result.stdout
+
 def get_immediate_subdirectories(folder_path: str) -> List[str]:
     path = Path(folder_path)
-    return sorted([str(item) for item in path.iterdir() if item.is_dir()])
+    return ["None"] + sorted([str(item) for item in path.iterdir() if item.is_dir()])
 
 def get_model_dir_path(model_dir):
     all_paths = folder_paths.get_folder_paths(model_dir)
@@ -103,11 +107,6 @@ def tensor_to_pil(comfyui_tensor):
     image_np = comfyui_tensor[0].cpu().numpy()
     image_np = (image_np * 255).astype(np.uint8)
     return Image.fromarray(image_np)
-
-def ensure_directories(path_list):
-    for path in path_list:
-        if not os.path.exists(path):
-            os.makedirs(path)
  
 
 def get_closest_resolution_given_reference_image(reference_image,target_resolution):
@@ -156,34 +155,40 @@ def register_dir():
     comfyui_root = os.path.dirname(folder_paths.__file__)
     model_dir_list = ["diffusion_models"]
     for model_dir in model_dir_list:
-        folder_paths.add_model_folder_path(model_dir, os.path.join(comfyui_root, model_dir))
+        folder_paths.add_model_folder_path(model_dir, os.path.join(folder_paths.models_dir, model_dir))
         
 register_dir()
     
-class HyVideoSRModelLoader:
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "path": (get_immediate_subdirectories(get_model_dir_path("upscale_models")),),
-                "sr_version": (["720p_sr_distilled", "1080p_sr_distilled"], {"default": "720p_sr_distilled"}),
-                "transformer_dtype": (["float32","float64","float16","bfloat16","uint8","int8","int16","int32","int64"], {"default": "bfloat16"}),
-            },
-            "optional": {
-            }
-        }
-    RETURN_TYPES = ("HYVID15TRANSFORMER", "HYVID15UPASAMPLER", )
-    RETURN_NAMES = ("transformer", "upsampler",)
-    FUNCTION = "loadmodel"
-    CATEGORY = "HunyuanVideoWrapper1.5"
+# class HyVideoSRModelLoader:
+#     @classmethod
+#     def INPUT_TYPES(s):
+#         return {
+#             "required": {
+#                 "path": (get_immediate_subdirectories(get_model_dir_path("upscale_models")),),
+#                 "sr_version": (["720p_sr_distilled", "1080p_sr_distilled"], {"default": "720p_sr_distilled"}),
+#                 "transformer_dtype": (["float32","float64","float16","bfloat16","uint8","int8","int16","int32","int64"], {"default": "bfloat16"}),
+#             },
+#             "optional": {
+#             }
+#         }
+#     RETURN_TYPES = ("HYVID15TRANSFORMER", "HYVID15UPASAMPLER", )
+#     RETURN_NAMES = ("transformer", "upsampler",)
+#     FUNCTION = "loadmodel"
+#     CATEGORY = "HunyuanVideoWrapper1.5"
 
-    def loadmodel(self, path, sr_version, transformer_dtype="bfloat16"):
-        device = mm.get_torch_device()
+#     def loadmodel(self, path, sr_version, transformer_dtype="bfloat16"):
+#         device = mm.get_torch_device()
+#         if path == "None":
+#             path = os.path.join(folder_paths.models_dir, "upscale_models", "hyvideo15")
+#             if not os.path.exists(path):
+#                 tmp_path = folder_paths.get_temp_directory()
+#                 run_cmd(f"hf download tencent/HunyuanVideo-1.5 --include upsampler --local-dir {tmp_path}")
+#                 run_cmd(f"mv {tmp_path}/upsampler {path}")
 
-        transformer = HunyuanVideo_1_5_DiffusionTransformer.from_pretrained(os.path.join(path, sr_version), torch_dtype=dtype_options[transformer_dtype]).to(device)
-        upsampler_cls = SRTo720pUpsampler if "720p" in sr_version else SRTo1080pUpsampler
-        upsampler = upsampler_cls.from_pretrained(os.path.join(path, sr_version)).to(device)
-        return transformer, upsampler
+#         transformer = HunyuanVideo_1_5_DiffusionTransformer.from_pretrained(os.path.join(path, sr_version), torch_dtype=dtype_options[transformer_dtype]).to(device)
+#         upsampler_cls = SRTo720pUpsampler if "720p" in sr_version else SRTo1080pUpsampler
+#         upsampler = upsampler_cls.from_pretrained(os.path.join(path, sr_version)).to(device)
+#         return transformer, upsampler
 
 
 class HyVideoTransformerLoader:
@@ -191,7 +196,7 @@ class HyVideoTransformerLoader:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "path": ("STRING",{"default":""}),
+                "path": (get_immediate_subdirectories(os.path.join(folder_paths.models_dir,"diffusion_models")),),
                 "resolution": (["480p", "720p"], {"default": "480p"}),
                 "task_type": (["t2v", "i2v"], {"default": "i2v"}),
                 "load_device": (["main_device", "offload_device"], {"default": "main_device"}),
@@ -210,6 +215,12 @@ class HyVideoTransformerLoader:
     def loadmodel(self, path, resolution, task_type, transformer_dtype, attn_mode="flash", load_device="main_device"):
         device = mm.get_torch_device() if load_device == "main_device" else mm.unet_offload_device()
         transformer_version = f"{resolution}_{task_type}"
+        if path == "None":
+            path = os.path.join(folder_paths.models_dir, "diffusion_models", "hyvideo15")
+            if not os.path.exists(path):
+                tmp_path = folder_paths.get_temp_directory()
+                run_cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"transformer/*\" --local-dir {tmp_path}")
+                run_cmd(f"mv {tmp_path}/transformer {path}")
 
         transformer = HunyuanVideo_1_5_DiffusionTransformer.from_pretrained(os.path.join(path, transformer_version), torch_dtype=dtype_options[transformer_dtype]).to(device)
         transformer.set_attn_mode(attn_mode)
@@ -235,8 +246,13 @@ class HyVideoVaeLoader:
     def loadmodel(self, path, load_device):
         device = mm.get_torch_device() if load_device == "main_device" else mm.unet_offload_device()
         vae_inference_config = self._get_vae_inference_config()
+        if path == "None":
+            path = os.path.join(folder_paths.models_dir, "vae", "hyvideo15")
+            if not os.path.exists(path):
+                tmp_path = folder_paths.get_temp_directory()
+                run_cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"vae/*\" --local-dir {tmp_path}")
+                run_cmd(f"mv {tmp_path}/vae {path}")
 
-        vae = hunyuanvideo_15_vae.AutoencoderKLConv3D.from_pretrained(path).to(device)
         vae = hunyuanvideo_15_vae.AutoencoderKLConv3D.from_pretrained(
             path,
             torch_dtype=vae_inference_config['dtype']
@@ -264,7 +280,7 @@ class HyTextEncoderLoader:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "path": (folder_paths.get_folder_paths("text_encoders"),),
+                "path": (get_immediate_subdirectories(get_model_dir_path("text_encoders")),),
                 "text_encoder_type": (["qwen-2.5vl-7b", "llm"], {"default": "llm"}),
                 "load_device": (["main_device", "offload_device"], {"default": "main_device"}),
             },
@@ -279,6 +295,11 @@ class HyTextEncoderLoader:
 
     def loadmodel(self, path, text_encoder_type, load_device):
         device = mm.get_torch_device() if load_device == "main_device" else mm.unet_offload_device()
+        if path == "None":
+            path = os.path.join(folder_paths.models_dir, "text_encoders", "hyvideo15")
+            if not os.path.exists(path):
+                os.makedirs(path, exist_ok=True)
+                run_cmd(f"hf download Qwen/Qwen2.5-VL-7B-Instruct --local-dir {path}/{text_encoder_type}")
 
         text_encoder = TextEncoder(
             text_encoder_type=text_encoder_type,
@@ -304,11 +325,12 @@ class HyVideoVisionEncoderLoader:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "path": (folder_paths.get_folder_paths("clip_vision"),),
+                "path": (get_immediate_subdirectories(get_model_dir_path("clip_vision")),),
                 "vision_encoder_type": (["siglip",], {"default": "siglip"}),
                 "load_device": (["main_device", "offload_device"], {"default": "main_device"}),
             },
             "optional": {
+                "hf_token": ("STRING",{"default":""}),
             }
         }
 
@@ -317,8 +339,13 @@ class HyVideoVisionEncoderLoader:
     FUNCTION = "loadmodel"
     CATEGORY = "HunyuanVideoWrapper1.5"
 
-    def loadmodel(self, path, vision_encoder_type, load_device):
+    def loadmodel(self, path, vision_encoder_type, load_device, hf_token):
         device = mm.get_torch_device() if load_device == "main_device" else mm.unet_offload_device()
+        if path == "None":
+            path = os.path.join(folder_paths.models_dir, "clip_vision", "hyvideo15")
+            if not os.path.exists(path):
+                os.makedirs(path, exist_ok=True)
+                run_cmd(f"hf download black-forest-labs/FLUX.1-Redux-dev --local-dir {path}/{vision_encoder_type} --token {hf_token}")
 
         vision_encoder = VisionEncoder(
             vision_encoder_type=vision_encoder_type,
@@ -337,7 +364,7 @@ class HyVideoByt5Loader:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "path": (folder_paths.get_folder_paths("text_encoders"),),
+                "path": ([get_model_dir_path("text_encoders"), "None"],),
                 "load_device": (["main_device", "offload_device"], {"default": "main_device"}),
             },
             "optional": {
@@ -352,6 +379,15 @@ class HyVideoByt5Loader:
 
     def loadmodel(self, path, load_device, byt5_max_length):
         device = mm.get_torch_device() if load_device == "main_device" else mm.unet_offload_device()
+        if path == "None":
+            path = os.path.join(folder_paths.models_dir, "text_encoders")
+            byt5_path = os.path.join(path, "byt5-small")
+            glyph_path = os.path.join(path, "Glyph-SDXL-v2")
+            if not os.path.exists(byt5_path):
+                run_cmd(f"hf download google/byt5-small --local-dir {path}/byt5-small")
+            if not os.path.exists(glyph_path):
+                run_cmd(f"modelscope download --model AI-ModelScope/Glyph-SDXL-v2 --local_dir {path}/Glyph-SDXL-v2")
+
         byt5_kwargs, prompt_format = self._load_byt5(path, True, byt5_max_length, device=device)
 
         return (byt5_kwargs, prompt_format)
@@ -422,8 +458,6 @@ class HyVideoCFG:
                 "task_type": (["t2v", "i2v"], {"default": "i2v"}),
                 "sr_transformer_config": ("HYVID15TRANSFORMERCONFIG", {"default": None}),
                 "prompt_rewrite":("BOOLEAN", {"default": False, "tooltip": "Rewrite prompt."}),
-                "download_model":("BOOLEAN", {"default": False, "tooltip": "If Download model."}),
-                "hf_token": ("STRING",{"default":""}),
                 "reference_image": ("IMAGE", {"default": None, "tooltip": "Reference image."}),
             }
         }
@@ -434,7 +468,7 @@ class HyVideoCFG:
     CATEGORY = "HunyuanVideoWrapper1.5"
     DESCRIPTION = "To use CFG with HunyuanVideo"
 
-    def config(self, prompt, negative_prompt, guidance_scale, num_videos_per_prompt, video_length, seed, transformer_config, flow_shift=None, prompt_rewrite=False, reference_image=None,download_model=False,hf_token="",task_type="i2v",sr_transformer_config=None): 
+    def config(self, prompt, negative_prompt, guidance_scale, num_videos_per_prompt, video_length, seed, transformer_config, flow_shift=None, prompt_rewrite=False, reference_image=None,task_type="i2v",sr_transformer_config=None): 
         
         if flow_shift is None or flow_shift == 0:
             if isinstance(transformer_config.ideal_resolution, str) and transformer_config.ideal_resolution == "480p":
@@ -447,46 +481,6 @@ class HyVideoCFG:
         self.prompt = prompt
         self.reference_image = reference_image
         self.task_type = task_type
-
-        if download_model:
-            text_encoderd_dir = self.get_model_dir_path("text_encoders")
-            vision_encoderd_dir = self.get_model_dir_path("clip_vision")
-            upscale_dir = os.path.join(self.get_model_dir_path("upscale_models"), "hyvideo15")
-            vae_dir = os.path.join(self.get_model_dir_path("vae"), "hyvideo15")
-            diffusion_dir = os.path.join(self.get_model_dir_path("diffusion_models"), "hyvideo15")
-            
-            temp_dir = comfy.utils.get_temp_directory()
-            hunyuan_dir = os.path.join(temp_dir, "hyvideo15")
-            
-            ensure_directories([text_encoderd_dir,vision_encoderd_dir,upscale_dir,vae_dir,diffusion_dir,hunyuan_dir])
-            
-            if not os.path.exists(hunyuan_dir):
-                cmd_list = [
-                    f"hf download tencent/HunyuanVideo-1.5 --local-dir {hunyuan_dir}",
-                    f"cp {hunyuan_dir}/upsampler/* {upscale_dir} -r -f",
-                    f"cp {hunyuan_dir}/vae/* {vae_dir} -r -f",
-                    f"cp {hunyuan_dir}/transformer/* {diffusion_dir} -r -f",
-                ]
-                for cmd in cmd_list:
-                    self._cmd(cmd)
-                
-            if not os.path.exists(f"{text_encoderd_dir}/llm"):
-                self._cmd(f"hf download Qwen/Qwen2.5-VL-7B-Instruct --local-dir {text_encoderd_dir}/llm")
-                
-            if not os.path.exists(f"{text_encoderd_dir}/byt5-small"):
-                self._cmd(f"hf download google/byt5-small --local-dir {text_encoderd_dir}/byt5-small")
-                
-            if not os.path.exists(f"{text_encoderd_dir}/Glyph-SDXL-v2"):
-                self._cmd(f"modelscope download --model AI-ModelScope/Glyph-SDXL-v2 --local_dir {text_encoderd_dir}/Glyph-SDXL-v2")
-                
-            if not os.path.exists(f"{vision_encoderd_dir}/siglip"):
-                self._cmd(f"hf download black-forest-labs/FLUX.1-Redux-dev --local-dir {vision_encoderd_dir}/siglip --token {hf_token}")
-            
-            
-
-                
-
-
         
         # Rewrite prompt with QwenClient
         if prompt_rewrite:
@@ -1476,84 +1470,84 @@ class HyVideoTransformer:
         return extra_step_kwargs
 
 
-class HyVideoSR:
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "transformer": ("HYVID15TRANSFORMER", ),
-                "upsampler": ("HYVID15UPASAMPLER", ),
-                "text_encoder": ("HYVID15TEXTENCODER", ),
-                "text_encoder_2": ("HYVID15TEXTENCODER", ),
-                "vae": ("HYVID15VAE", ),
-                "steps": ("INT", {"default": 50, "min": 1, "max": 1000, "step": 1}),
-                "hyvid_cfg": ("HYVID15CFG", ),
-                "output_type": (["pt", "latent"], {"default": "pt" }),
-                "latents": ("HYVID15TRANSFORMERLATENT", ),
-                "reference_image": ("IMAGE", {"default": None}),
-                "prompt_format" : ("HYVID15MULTILINGUALPROMPTFORMAT", ),
-                "vision_encoder": ("HYVID15VISIONENCODER", ),
-            },
-            "optional": {
-                "enable_offloading" : ("BOOLEAN", {"default": True}),
-                "transformer_version": ("STRING", {"default": "480p_t2v", "options": ["480p_t2v", "720p_t2v", "480p_i2v", "720p_i2v"]}),
-                "byt5_kwargs": ("HYVID15BYT5KWARGS", {"default": None}),
-            }
-        }
-    RETURN_TYPES = ("HYVID15SROUT", )
-    RETURN_NAMES = ("sr_out",)
-    FUNCTION = "process"
-    CATEGORY = "HunyuanVideoWrapper1.5"
-    def process(self, steps, hyvid_cfg, output_type, latents, transformer, upsampler,  text_encoder, text_encoder_2, vae, prompt_format, vision_encoder, enable_offloading=True, transformer_version="480p_t2v", byt5_kwargs=None,reference_image=None):
-        self.enable_offloading = enable_offloading
-        self.transformer = transformer
-        self.upsampler = upsampler
-        self.hyvid_cfg = hyvid_cfg
-        self.text_encoder = text_encoder
-        self.text_encoder_2 = text_encoder_2
-        self.vae = vae
-        self.byt5_kwargs = byt5_kwargs
-        self.prompt_format = prompt_format
-        self.vision_encoder = vision_encoder
-        if reference_image is not None:
-            reference_image = tensor_to_pil(reference_image)
+# class HyVideoSR:
+#     @classmethod
+#     def INPUT_TYPES(s):
+#         return {
+#             "required": {
+#                 "transformer": ("HYVID15TRANSFORMER", ),
+#                 "upsampler": ("HYVID15UPASAMPLER", ),
+#                 "text_encoder": ("HYVID15TEXTENCODER", ),
+#                 "text_encoder_2": ("HYVID15TEXTENCODER", ),
+#                 "vae": ("HYVID15VAE", ),
+#                 "steps": ("INT", {"default": 50, "min": 1, "max": 1000, "step": 1}),
+#                 "hyvid_cfg": ("HYVID15CFG", ),
+#                 "output_type": (["pt", "latent"], {"default": "pt" }),
+#                 "latents": ("HYVID15TRANSFORMERLATENT", ),
+#                 "reference_image": ("IMAGE", {"default": None}),
+#                 "prompt_format" : ("HYVID15MULTILINGUALPROMPTFORMAT", ),
+#                 "vision_encoder": ("HYVID15VISIONENCODER", ),
+#             },
+#             "optional": {
+#                 "enable_offloading" : ("BOOLEAN", {"default": True}),
+#                 "transformer_version": ("STRING", {"default": "480p_t2v", "options": ["480p_t2v", "720p_t2v", "480p_i2v", "720p_i2v"]}),
+#                 "byt5_kwargs": ("HYVID15BYT5KWARGS", {"default": None}),
+#             }
+#         }
+#     RETURN_TYPES = ("HYVID15SROUT", )
+#     RETURN_NAMES = ("sr_out",)
+#     FUNCTION = "process"
+#     CATEGORY = "HunyuanVideoWrapper1.5"
+#     def process(self, steps, hyvid_cfg, output_type, latents, transformer, upsampler,  text_encoder, text_encoder_2, vae, prompt_format, vision_encoder, enable_offloading=True, transformer_version="480p_t2v", byt5_kwargs=None,reference_image=None):
+#         self.enable_offloading = enable_offloading
+#         self.transformer = transformer
+#         self.upsampler = upsampler
+#         self.hyvid_cfg = hyvid_cfg
+#         self.text_encoder = text_encoder
+#         self.text_encoder_2 = text_encoder_2
+#         self.vae = vae
+#         self.byt5_kwargs = byt5_kwargs
+#         self.prompt_format = prompt_format
+#         self.vision_encoder = vision_encoder
+#         if reference_image is not None:
+#             reference_image = tensor_to_pil(reference_image)
 
-        sr_version = TRANSFORMER_VERSION_TO_SR_VERSION[transformer_version]
-        sr_pipeline = self._create_sr_pipeline(sr_version)
-        sr_out = sr_pipeline(
-            prompt=hyvid_cfg["prompt"],
-            num_inference_steps=steps,
-            video_length=hyvid_cfg["video_length"],
-            negative_prompt="",
-            num_videos_per_prompt=hyvid_cfg["num_videos_per_prompt"],
-            seed=hyvid_cfg["seed"],
-            output_type=output_type,
-            lq_latents=latents,
-            reference_image=reference_image,
-        )
-        return (sr_out,)
+#         sr_version = TRANSFORMER_VERSION_TO_SR_VERSION[transformer_version]
+#         sr_pipeline = self._create_sr_pipeline(sr_version)
+#         sr_out = sr_pipeline(
+#             prompt=hyvid_cfg["prompt"],
+#             num_inference_steps=steps,
+#             video_length=hyvid_cfg["video_length"],
+#             negative_prompt="",
+#             num_videos_per_prompt=hyvid_cfg["num_videos_per_prompt"],
+#             seed=hyvid_cfg["seed"],
+#             output_type=output_type,
+#             lq_latents=latents,
+#             reference_image=reference_image,
+#         )
+#         return (sr_out,)
     
-    def _create_sr_pipeline(self, sr_version):
-        from hyvideo.pipelines.hunyuan_video_sr_pipeline import HunyuanVideo_1_5_SR_Pipeline
+#     def _create_sr_pipeline(self, sr_version):
+#         from hyvideo.pipelines.hunyuan_video_sr_pipeline import HunyuanVideo_1_5_SR_Pipeline
 
-        return HunyuanVideo_1_5_SR_Pipeline(
-            vae=self.vae,
-            transformer=self.transformer,
-            text_encoder=self.text_encoder,
-            scheduler=self.hyvid_cfg["scheduler"],
-            upsampler=self.upsampler,
-            text_encoder_2=self.text_encoder_2,
-            progress_bar_config=None,
-            glyph_byT5_v2=True if self.byt5_kwargs is not None else False,
-            byt5_model=self.byt5_kwargs["byt5_model"],
-            byt5_tokenizer=self.byt5_kwargs["byt5_tokenizer"],
-            byt5_max_length=self.byt5_kwargs["byt5_max_length"],
-            prompt_format=self.prompt_format,
-            execution_device='cuda',
-            vision_encoder=self.vision_encoder,
-            enable_offloading=self.enable_offloading,
-            **SR_PIPELINE_CONFIGS[sr_version],
-        )
+#         return HunyuanVideo_1_5_SR_Pipeline(
+#             vae=self.vae,
+#             transformer=self.transformer,
+#             text_encoder=self.text_encoder,
+#             scheduler=self.hyvid_cfg["scheduler"],
+#             upsampler=self.upsampler,
+#             text_encoder_2=self.text_encoder_2,
+#             progress_bar_config=None,
+#             glyph_byT5_v2=True if self.byt5_kwargs is not None else False,
+#             byt5_model=self.byt5_kwargs["byt5_model"],
+#             byt5_tokenizer=self.byt5_kwargs["byt5_tokenizer"],
+#             byt5_max_length=self.byt5_kwargs["byt5_max_length"],
+#             prompt_format=self.prompt_format,
+#             execution_device='cuda',
+#             vision_encoder=self.vision_encoder,
+#             enable_offloading=self.enable_offloading,
+#             **SR_PIPELINE_CONFIGS[sr_version],
+#         )
 
 class HunyuanVideoPipelineOutput(BaseOutput):
     videos: Union[torch.Tensor, np.ndarray]
@@ -1647,8 +1641,8 @@ NODE_CLASS_MAPPINGS = {
     "HyVideo15VaeEncode": HyVideoVaeEncode,
     "HyVideo15Transformer": HyVideoTransformer,
     "HyVideo15LatentsPrepare": HyVideoLatentsPrepare,
-    "HyVideo15SR": HyVideoSR,
-    "HyVideo15SRModelLoader": HyVideoSRModelLoader,
+    # "HyVideo15SR": HyVideoSR,
+    # "HyVideo15SRModelLoader": HyVideoSRModelLoader,
     "HyVideo15VaeDecode": HyVideoVaeDecode,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -1664,7 +1658,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "HyVideo15VaeEncode": "HunyuanVideo VAE Encode",
     "HyVideo15Transformer": "HunyuanVideo Transformer",
     "HyVideo15LatentsPrepare": "HunyuanVideo Prepare Latents",
-    "HyVideo15SR": "HunyuanVideo Super Resolution",
-    "HyVideo15SRModelLoader": "HunyuanVideo Super Resolution Model Loader",
+    # "HyVideo15SR": "HunyuanVideo Super Resolution",
+    # "HyVideo15SRModelLoader": "HunyuanVideo Super Resolution Model Loader",
     "HyVideo15VaeDecode": "HunyuanVideo Vae Decode",
 }
