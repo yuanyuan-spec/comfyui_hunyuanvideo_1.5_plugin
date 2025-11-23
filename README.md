@@ -21,7 +21,7 @@ A ComfyUI plugin based on **HunyuanVideo-1.5**, offering both simplified and com
 Choose one of the following methods to download the model files (including `hunyuanvideo-1.5` model, `text_encoder`, and `vision_encoder`):
 
 #### Method 1: Auto-Download (Recommended)
-Enable the **Auto-Download** option in the plugin when running a workflow. Models will be automatically downloaded to the default path.
+Enable the **Auto-Download** option in the plugin when running a workflow. **Models will be automatically downloaded to the default path.When using the model's auto-download feature, please set the path of the model loading node to "None.**" The corresponding model will be automatically downloaded to the default directory (if it already exists, it will not be downloaded again). The next time you run the workflow, you can see the auto-downloaded model in the node's path options.
 
 #### Method 2: Manual Download
 Manually download the model files and place them into the plugin's specified model directory.Please refer to the checkpoints-download.md file in the HunyuanVideo-1.5 open-source project for details.
