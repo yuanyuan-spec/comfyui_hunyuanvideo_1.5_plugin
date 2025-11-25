@@ -29,7 +29,7 @@
         }
       ],
       "properties": {
-        "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
         "ver": "f37aa15e5b41fd9802168da06bca80e503df3350",
         "Node name for S&R": "HyVideo15ModelLoader"
       },
@@ -170,7 +170,7 @@
         }
       ],
       "properties": {
-        "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
         "ver": "f37aa15e5b41fd9802168da06bca80e503df3350",
         "Node name for S&R": "HyVideo15I2VSampler"
       },
