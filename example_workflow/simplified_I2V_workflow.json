@@ -34,7 +34,7 @@
         "Node name for S&R": "HyVideo15ModelLoader"
       },
       "widgets_values": [
-        "",
+        "/deploy/ComfyUI/models",
         "flash",
         256,
         "siglip",
@@ -46,7 +46,7 @@
         2,
         false,
         false,
-        "480p",
+        "720p",
         "i2v",
         false,
         false,
@@ -177,15 +177,15 @@
       "widgets_values": [
         "A girl is dancing.",
         "",
-        121,
+        12,
         50,
         6,
         1,
         "pt",
-        true,
+        false,
         "16:9",
         8,
-        1406,
+        862,
         "randomize"
       ]
     },
@@ -269,8 +269,8 @@
     "ds": {
       "scale": 1,
       "offset": [
-        -204.02803458394177,
-        -1281.4717836135287
+        -127.02803458394177,
+        -1188.4717836135287
       ]
     },
     "frontendVersion": "1.20.7"

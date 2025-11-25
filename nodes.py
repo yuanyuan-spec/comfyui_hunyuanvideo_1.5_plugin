@@ -389,7 +389,7 @@ class HyVideo15ModelLoader:
         else:
             device = torch.device(device_opt)
 
-        byt5_kwargs, prompt_format = HunyuanVideo_1_5_Pipeline._load_byt5(os.path.join(model_path, "text_encoders", "hyvideo15"), True, byt5_max_length, device=device)
+        byt5_kwargs, prompt_format = self.load_byt5(os.path.join(model_path, "text_encoders"), True, byt5_max_length, device=device)
         scheduler = FlowMatchDiscreteScheduler(
             shift=flow_shift,
             reverse=True,
@@ -410,7 +410,7 @@ class HyVideo15ModelLoader:
         text_encoder = TextEncoder(
             text_encoder_type=text_encoder_type,
             tokenizer_type=text_encoder_tokenizer_type,
-            text_encoder_path=os.path.join(model_path, "text_encoder", "hyvideo15", "llm"),
+            text_encoder_path=os.path.join(model_path, "text_encoders", "hyvideo15", "llm"),
             max_length=text_encoder_max_length,
             text_encoder_precision=text_encoder_precision,
             prompt_template=PROMPT_TEMPLATE['li-dit-encode-image-json'],
@@ -486,13 +486,60 @@ class HyVideo15ModelLoader:
             os.makedirs(path, exist_ok=True)
             self._cmd(f"hf download black-forest-labs/FLUX.1-Redux-dev --local-dir {path} --token {hf_token}")
 
-        path = os.path.join(folder_paths.models_dir, "text_encoders", "hyvideo15")
+        path = os.path.join(folder_paths.models_dir, "text_encoders")
         byt5_path = os.path.join(path, "byt5-small")
         glyph_path = os.path.join(path, "Glyph-SDXL-v2")
         if not os.path.exists(byt5_path):
             self._cmd(f"hf download google/byt5-small --local-dir {path}")
         if not os.path.exists(glyph_path):
             self._cmd(f"modelscope download --model AI-ModelScope/Glyph-SDXL-v2 --local_dir {path}")
+            
+    def load_byt5(self, cached_folder, glyph_byT5_v2, byt5_max_length, device):
+        if not glyph_byT5_v2:
+            byt5_kwargs = None
+            prompt_format = None
+            return byt5_kwargs, prompt_format
+        try:
+            load_from = cached_folder
+            glyph_root = os.path.join(load_from, "Glyph-SDXL-v2")
+            if not os.path.exists(glyph_root):
+                raise RuntimeError(
+                    f"Glyph checkpoint not found from '{glyph_root}'. \n"
+                    "Please download from https://modelscope.cn/models/AI-ModelScope/Glyph-SDXL-v2/files.\n\n"
+                    "- Required files:\n"
+                    "    Glyph-SDXL-v2\n"
+                    "    ├── assets\n"
+                    "    │   ├── color_idx.json\n"
+                    "    │   └── multilingual_10-lang_idx.json\n"
+                    "    └── checkpoints\n"
+                    "        └── byt5_model.pt\n"
+                )
+
+            byT5_google_path = os.path.join(load_from, "byt5-small")
+            if not os.path.exists(byT5_google_path):
+                loguru.logger.warning(f"ByT5 google path not found from: {byT5_google_path}. Try downloading from https://huggingface.co/google/byt5-small.")
+                byT5_google_path = "google/byt5-small"
+
+
+            multilingual_prompt_format_color_path = os.path.join(glyph_root, "assets/color_idx.json")
+            multilingual_prompt_format_font_path = os.path.join(glyph_root, "assets/multilingual_10-lang_idx.json")
+
+            byt5_args = dict(
+                byT5_google_path=byT5_google_path,
+                byT5_ckpt_path=os.path.join(glyph_root, "checkpoints/byt5_model.pt"),
+                multilingual_prompt_format_color_path=multilingual_prompt_format_color_path,
+                multilingual_prompt_format_font_path=multilingual_prompt_format_font_path,
+                byt5_max_length=byt5_max_length
+            )
+
+            byt5_kwargs = load_glyph_byT5_v2(byt5_args, device=device)
+            prompt_format = MultilingualPromptFormat(
+                font_path=multilingual_prompt_format_font_path,
+                color_path=multilingual_prompt_format_color_path
+            )
+            return byt5_kwargs, prompt_format
+        except Exception as e:
+            raise RuntimeError("Error loading byT5 glyph processor") from e
 
         
     def _cmd(self,cmd):

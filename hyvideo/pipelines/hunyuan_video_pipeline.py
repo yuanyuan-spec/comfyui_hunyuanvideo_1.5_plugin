@@ -1313,7 +1313,7 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
 
     @classmethod
     def load_sr_transformer_upsampler(cls, cached_folder, sr_version, transformer_dtype=torch.bfloat16, device=None):
-        transformer = HunyuanVideo_1_5_DiffusionTransformer.from_pretrained(os.path.join(cached_folder, "transformer", sr_version), torch_dtype=transformer_dtype).to(device)
+        transformer = HunyuanVideo_1_5_DiffusionTransformer.from_pretrained(os.path.join(cached_folder,  sr_version), torch_dtype=transformer_dtype).to(device)
         upsampler_cls = SRTo720pUpsampler if "720p" in sr_version else SRTo1080pUpsampler
         upsampler = upsampler_cls.from_pretrained(os.path.join(cached_folder, "upsampler", sr_version)).to(device)
         return transformer, upsampler
