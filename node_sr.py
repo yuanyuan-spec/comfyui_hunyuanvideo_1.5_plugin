@@ -67,7 +67,6 @@ from node_adv import dtype_options,get_immediate_subdirectories,get_model_dir_pa
 
 import comfy.model_management as mm
 from hyvideo.pipelines.hunyuan_video_sr_pipeline import expand_dims,BucketMap,SizeMap
-device = mm.get_torch_device()
 
 class HyVideoSrLatentsPrepare:
     @classmethod
@@ -90,6 +89,8 @@ class HyVideoSrLatentsPrepare:
     CATEGORY = "HunyuanVideoWrapper1.5"
 
     def process(self, hyvid_cfg, vae, aspect_ratio,target_dtype,transformer_latent=None,reference_image=None):
+        device = mm.get_torch_device()
+        
         self.vae = vae
         self.target_size_config = {
             "360p": {"bucket_hw_base_size": 480, "bucket_hw_bucket_stride": 16},
@@ -103,9 +104,9 @@ class HyVideoSrLatentsPrepare:
             solver="euler",
         )
         
-        ideal_resolution = hyvid_cfg["transformer_config"].ideal_resolution
+        ideal_resolution = hyvid_cfg["sr_transformer_config"].ideal_resolution
         
-        base_resolution = "480p"
+        base_resolution = hyvid_cfg["transformer_config"].ideal_resolution
         
         lq_latents = transformer_latent
 
@@ -217,7 +218,6 @@ class HyVideoSrVaeEncode:
                 "upsampler": ("UPASAMPLER", )
             },
             "optional": {
-                "enable_offloading": ("BOOLEAN", {"default": True}),
                 "reference_image": ("IMAGE", {"default": None}),
             }
         }
@@ -226,7 +226,10 @@ class HyVideoSrVaeEncode:
     RETURN_NAMES = ("vae_concat")
     FUNCTION = "encode"
     CATEGORY = "HunyuanVideoWrapper1.5"
-    def encode(self, vae, latents_dict,height, width, hyvid_cfg, upsampler,enable_offloading=True,reference_image=None):
+    def encode(self, vae, latents_dict,height, width, hyvid_cfg, upsampler,reference_image=None):
+        device = torch.device('cuda')
+        enable_offloading = False
+        self.device = device
         self.vae = vae
         
         if reference_image is not None:
@@ -309,7 +312,7 @@ class HyVideoSrVaeEncode:
                 transforms.Normalize([0.5], [0.5])
             ])
             
-            ref_images_pixel_values = ref_image_transform(reference_image).unsqueeze(0).unsqueeze(2).to(device)
+            ref_images_pixel_values = ref_image_transform(reference_image).unsqueeze(0).unsqueeze(2).to(self.device)
             
             with torch.autocast(device_type="cuda", dtype=torch.float16, enabled=True):
                 cond_latents = self.vae.encode(ref_images_pixel_values).latent_dist.mode()
@@ -329,7 +332,7 @@ class HyVideoSrVaeEncode:
     
     def add_noise_to_lq(self, lq_latents, strength=0.7):
         noise = torch.randn_like(lq_latents)
-        timestep = torch.tensor([1000.0], device=device) * strength
+        timestep = torch.tensor([1000.0], device=self.device) * strength
         t = expand_dims(timestep, lq_latents.ndim)
         return (1 - t / 1000.0) * lq_latents + (t / 1000.0) * noise
 
@@ -351,7 +354,6 @@ class HyVideoSrTransformer:
                 "lantens_dict": ("HYVID15LATENTSDICT", ),
             },
             "optional": {
-                "enable_offloading" : ("BOOLEAN", {"default": True}),
                 "embedded_guidance_scale": ("FLOAT", {"default": None, "min": 0, "max": 10, "step": 0.01}), #self.config.embedded_guidance_scale
                 "autocast_enabled": ("BOOLEAN", {"default": True}),
                 "eta": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.01} ),
@@ -363,7 +365,10 @@ class HyVideoSrTransformer:
     FUNCTION = "process"
     CATEGORY = "HunyuanVideoWrapper1.5"
     def process(self, hyvid_cfg,target_dtype, n_tokens, steps, transformer, vae_concat, hyvid_embeds, vision_states, extra_kwargs,lantens_dict,
-                enable_offloading=True, embedded_guidance_scale=None, autocast_enabled=True,eta=0.0,guidance_rescale=0.0):
+                embedded_guidance_scale=None, autocast_enabled=True,eta=0.0,guidance_rescale=0.0):
+        
+        device = torch.device('cuda')
+        enable_offloading = False
         
         extra_step_kwargs = self._prepare_extra_func_kwargs(
             hyvid_cfg["scheduler"].step, {"generator": hyvid_cfg["generator"], "eta": eta},
@@ -419,8 +424,20 @@ class HyVideoSrTransformer:
                     if embedded_guidance_scale is not None
                     else None
                 )
+                
+                def to_device(obj):
+                    return obj.to(device) if torch.is_tensor(obj) else obj
 
-                with torch.autocast(device_type="cuda", dtype=dtype_options[target_dtype], enabled=autocast_enabled):
+                latent_model_input = to_device(latent_model_input)
+                t_expand = to_device(t_expand)
+                hyvid_embeds["prompt_embeds"] = to_device(hyvid_embeds["prompt_embeds"])
+                hyvid_embeds["prompt_embeds_2"] = to_device(hyvid_embeds["prompt_embeds_2"])
+                hyvid_embeds["prompt_mask"] = to_device(hyvid_embeds["prompt_mask"])
+                timesteps_r = to_device(timesteps_r)
+                vision_states = to_device(vision_states)
+                guidance_expand = to_device(guidance_expand)
+
+                with torch.autocast(device_type=str(device), dtype=dtype_options[target_dtype], enabled=autocast_enabled):
                     output = transformer(
                         latent_model_input,
                         t_expand,
@@ -498,6 +515,8 @@ class HyVidelSrTransformerUpsamplerLoader:
     CATEGORY = "HunyuanVideoWrapper1.5"
 
     def load_sr_transformer_upsampler(cls, upsampler_path,transformer_path, resolution,task_type,transformer_dtype="bfloat16"):
+        device = torch.device('cuda')
+        
         dtype_options = {
             "float32": torch.float32,
             "float64": torch.float64,
@@ -543,7 +562,6 @@ class HyVidelSrVaeDecoder:
                 "vae_dtype": (["float32","float64","float16","bfloat16","uint8","int8","int16","int32","int64"], {"default": "float16"}),
             },
             "optional": {
-                "enable_offloading" : ("BOOLEAN", {"default": True}),
             }
         }
     RETURN_TYPES = ("HYVID15SROUT", )
@@ -551,6 +569,9 @@ class HyVidelSrVaeDecoder:
     FUNCTION = "process"
     CATEGORY = "HunyuanVideoWrapper1.5"
     def process(self, latents, output_type, vae, hyvid_cfg, enable_offloading=True, vae_dtype="bfloat16",):
+        device = torch.device('cuda')
+        enable_offloading =False
+        
 
         self.vae = vae
         self.enable_offloading = enable_offloading

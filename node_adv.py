@@ -199,7 +199,6 @@ class HyVideoTransformerLoader:
                 "path": (get_immediate_subdirectories(os.path.join(folder_paths.models_dir,"diffusion_models")),),
                 "resolution": (["480p", "720p"], {"default": "480p"}),
                 "task_type": (["t2v", "i2v"], {"default": "i2v"}),
-                "load_device": (["main_device", "offload_device"], {"default": "main_device"}),
                 "transformer_dtype": (["float32","float64","float16","bfloat16","uint8","int8","int16","int32","int64"], {"default": "bfloat16"}),
             },
             "optional": {
@@ -212,8 +211,8 @@ class HyVideoTransformerLoader:
     FUNCTION = "loadmodel"
     CATEGORY = "HunyuanVideoWrapper1.5"
 
-    def loadmodel(self, path, resolution, task_type, transformer_dtype, attn_mode="flash", load_device="main_device"):
-        device = mm.get_torch_device() if load_device == "main_device" else mm.unet_offload_device()
+    def loadmodel(self, path, resolution, task_type, transformer_dtype, attn_mode="flash"):
+        device = torch.device('cuda')
         transformer_version = f"{resolution}_{task_type}"
         if path == "None":
             path = os.path.join(folder_paths.models_dir, "diffusion_models", "hyvideo15")
@@ -232,7 +231,6 @@ class HyVideoVaeLoader:
         return {
             "required": {
                 "path": (get_immediate_subdirectories(get_model_dir_path("vae")),),
-                "load_device": (["main_device", "offload_device"], {"default": "main_device"}),
             },
             "optional": {
             }
@@ -243,8 +241,8 @@ class HyVideoVaeLoader:
     FUNCTION = "loadmodel"
     CATEGORY = "HunyuanVideoWrapper1.5"
 
-    def loadmodel(self, path, load_device):
-        device = mm.get_torch_device() if load_device == "main_device" else mm.unet_offload_device()
+    def loadmodel(self, path):
+        device = torch.device('cuda')
         vae_inference_config = self._get_vae_inference_config()
         if path == "None":
             path = os.path.join(folder_paths.models_dir, "vae", "hyvideo15")
@@ -1084,7 +1082,6 @@ class HyVideoVaeEncode:
                 "hyvid_cfg": ("HYVID15CFG", )
             },
             "optional": {
-                "enable_offloading": ("BOOLEAN", {"default": True}),
                 "reference_image": ("IMAGE", {"default": None}),
             }
         }
@@ -1093,9 +1090,10 @@ class HyVideoVaeEncode:
     RETURN_NAMES = ("vae_concat", )
     FUNCTION = "encode"
     CATEGORY = "HunyuanVideoWrapper1.5"
-    def encode(self, vae, latents_dict, height, width, hyvid_cfg, enable_offloading=True, reference_image=None):
+    def encode(self, vae, latents_dict, height, width, hyvid_cfg, reference_image=None):
         self.vae = vae
-        device = mm.vae_offload_device() if enable_offloading else mm.vae_device()
+        device = torch.device('cuda')
+        enable_offloading = False
         multitask_mask = self._get_task_mask(hyvid_cfg["task_type"], latents_dict["latent_target_length"])
 
         if reference_image is not None:
@@ -1343,7 +1341,6 @@ class HyVideoTransformer:
                 "target_dtype": (["float32","float64","float16","bfloat16","uint8","int8","int16","int32","int64"], {"default": "bfloat16"}),
             },
             "optional": {
-                "enable_offloading" : ("BOOLEAN", {"default": True}),
                 "embedded_guidance_scale": ("FLOAT", {"default": None, "tooltip": "Additional control guidance scale, if supported"}), #self.config.embedded_guidance_scale
                 "guidance_rescale" : ("FLOAT", {"default": 0.0}),
                 "autocast_enabled": ("BOOLEAN", {"default": True}),
@@ -1355,7 +1352,10 @@ class HyVideoTransformer:
     FUNCTION = "process"
     CATEGORY = "HunyuanVideoWrapper1.5"
 
-    def process(self, hyvid_cfg, n_tokens, steps, transformer, vae_concat, hyvid_embeds, vision_states, extra_kwargs, latents_dict, target_dtype, enable_offloading=True, embedded_guidance_scale=None, autocast_enabled=True, guidance_rescale=0.0, eta=0.0):
+    def process(self, hyvid_cfg, n_tokens, steps, transformer, vae_concat, hyvid_embeds, vision_states, extra_kwargs, latents_dict, target_dtype, embedded_guidance_scale=None, autocast_enabled=True, guidance_rescale=0.0, eta=0.0):
+        
+        device = torch.device('cuda')
+        enable_offloading = False
         # print("vae_concat: ", vae_concat)
         # print("extra_kwargs: ", extra_kwargs)
         # print("latens_dict: ", latens_dict)
@@ -1411,8 +1411,24 @@ class HyVideoTransformer:
                     if embedded_guidance_scale is not None
                     else None
                 )
+                
+                def to_device(obj):
+                    return obj.to(device) if torch.is_tensor(obj) else obj
 
-                with torch.autocast(device_type="cuda", dtype=dtype_options[target_dtype], enabled=autocast_enabled):
+                latent_model_input = to_device(latent_model_input)
+                t_expand = to_device(t_expand)
+                hyvid_embeds["prompt_embeds"] = to_device(hyvid_embeds["prompt_embeds"])
+                hyvid_embeds["prompt_embeds_2"] = to_device(hyvid_embeds["prompt_embeds_2"])
+                hyvid_embeds["prompt_mask"] = to_device(hyvid_embeds["prompt_mask"])
+                timesteps_r = to_device(timesteps_r)
+                vision_states = to_device(vision_states)
+                guidance_expand = to_device(guidance_expand)
+                
+                extra_kwargs["byt5_text_states"] = to_device(extra_kwargs["byt5_text_states"])
+                extra_kwargs["byt5_text_mask"] = to_device(extra_kwargs["byt5_text_mask"])
+                
+
+                with torch.autocast(device_type=str(device), dtype=dtype_options[target_dtype], enabled=autocast_enabled):
                     output = transformer(
                         latent_model_input,
                         t_expand,
@@ -1565,7 +1581,6 @@ class HyVideoVaeDecode:
                 "vae_dtype": (["float32","float64","float16","bfloat16","uint8","int8","int16","int32","int64"], {"default": "float16"}),
             },
             "optional": {
-                "enable_offloading" : ("BOOLEAN", {"default": True}),
                 "sr_out": ("HYVID15SROUT", ),
                 "vae_autocast_enabled": ("BOOLEAN", {"default": True}),
             }
@@ -1574,8 +1589,9 @@ class HyVideoVaeDecode:
     RETURN_NAMES = ("image",)
     FUNCTION = "process"
     CATEGORY = "HunyuanVideoWrapper1.5"
-    def process(self, latents, output_type, vae, hyvid_cfg, enable_offloading=True, vae_dtype="float16", sr_out=None, vae_autocast_enabled=True):
-        device = mm.vae_offload_device() if enable_offloading else mm.vae_device()
+    def process(self, latents, output_type, vae, hyvid_cfg,  vae_dtype="float16", sr_out=None, vae_autocast_enabled=True):
+        device = torch.device('cuda')
+        enable_offloading = False
         self.vae = vae
         self.vae_dtype = dtype_options[vae_dtype]
         self.vae_autocast_enabled = vae_autocast_enabled

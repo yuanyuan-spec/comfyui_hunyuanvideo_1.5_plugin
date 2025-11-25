@@ -1,2017 +1,1850 @@
 {
-    "id": "288b33af-307e-4607-bdc1-018fc1481403",
-    "revision": 0,
-    "last_node_id": 82,
-    "last_link_id": 245,
-    "nodes": [
-      {
-        "id": 30,
-        "type": "CreateVideo",
-        "pos": [
-          1441.6341552734375,
-          783.473876953125
-        ],
-        "size": [
-          270,
-          78
-        ],
-        "flags": {},
-        "order": 22,
-        "mode": 0,
-        "inputs": [
-          {
-            "name": "images",
-            "type": "IMAGE",
-            "link": 91
-          },
-          {
-            "name": "audio",
-            "shape": 7,
-            "type": "AUDIO",
-            "link": null
-          }
-        ],
-        "outputs": [
-          {
-            "name": "VIDEO",
-            "type": "VIDEO",
-            "links": [
-              46
-            ]
-          }
-        ],
-        "properties": {
-          "cnr_id": "comfy-core",
-          "ver": "0.3.39",
-          "Node name for S&R": "CreateVideo"
+  "id": "288b33af-307e-4607-bdc1-018fc1481403",
+  "revision": 0,
+  "last_node_id": 84,
+  "last_link_id": 255,
+  "nodes": [
+    {
+      "id": 30,
+      "type": "CreateVideo",
+      "pos": [
+        1150.1314697265625,
+        906.6777954101562
+      ],
+      "size": [
+        270,
+        78
+      ],
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 91
         },
-        "widgets_values": [
-          30
-        ]
+        {
+          "name": "audio",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "links": [
+            46
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.39",
+        "Node name for S&R": "CreateVideo"
       },
-      {
-        "id": 33,
-        "type": "SaveVideo",
-        "pos": [
-          1445.0626220703125,
-          912.2408447265625
-        ],
-        "size": [
-          270,
-          456.2692565917969
-        ],
-        "flags": {},
-        "order": 23,
-        "mode": 0,
-        "inputs": [
-          {
-            "name": "video",
-            "type": "VIDEO",
-            "link": 46
-          }
-        ],
-        "outputs": [],
-        "properties": {
-          "cnr_id": "comfy-core",
-          "ver": "0.3.39",
-          "Node name for S&R": "SaveVideo"
-        },
-        "widgets_values": [
-          "video/ComfyUI",
-          "auto",
-          "auto"
-        ]
-      },
-      {
-        "id": 42,
-        "type": "HyVideo15CFG",
-        "pos": [
-          -295.60504150390625,
-          -16.440702438354492
-        ],
-        "size": [
-          400,
-          514
-        ],
-        "flags": {},
-        "order": 7,
-        "mode": 0,
-        "inputs": [
-          {
-            "name": "transformer_config",
-            "shape": 7,
-            "type": "HYVID15TRANSFORMERCONFIG",
-            "link": 106
-          },
-          {
-            "name": "sr_transformer_config",
-            "shape": 7,
-            "type": "HYVID15TRANSFORMERCONFIG",
-            "link": 220
-          },
-          {
-            "name": "reference_image",
-            "shape": 7,
-            "type": "IMAGE",
-            "link": 244
-          },
-          {
-            "name": "scheduler",
-            "type": "HYVID15FLOWMATCHDISCRETESCHEDULER",
-            "link": null
-          }
-        ],
-        "outputs": [
-          {
-            "name": "hyvid_cfg",
-            "type": "HYVID15CFG",
-            "links": [
-              110,
-              111,
-              112,
-              113,
-              115,
-              210,
-              229,
-              230,
-              231,
-              232,
-              233,
-              234,
-              235,
-              236
-            ]
-          },
-          {
-            "name": "hyvid_sr_cfg",
-            "type": "HYVID15CFG",
-            "links": []
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
-          "Node name for S&R": "HyVideo15CFG"
-        },
-        "widgets_values": [
-          "The text in the screenshot is moving.",
-          "",
-          0,
-          5,
-          10,
-          1,
-          10,
-          1597322591,
-          "randomize",
-          "i2v"
-        ]
-      },
-      {
-        "id": 43,
-        "type": "HyVideo15LatentsPrepare",
-        "pos": [
-          125.06942749023438,
-          -28.921161651611328
-        ],
-        "size": [
-          295.0044860839844,
-          142
-        ],
-        "flags": {},
-        "order": 8,
-        "mode": 0,
-        "inputs": [
-          {
-            "name": "hyvid_cfg",
-            "type": "HYVID15CFG",
-            "link": 111
-          },
-          {
-            "name": "vae",
-            "type": "HYVID15VAE",
-            "link": 206
-          },
-          {
-            "name": "latents",
-            "shape": 7,
-            "type": "LATENT",
-            "link": null
-          },
-          {
-            "name": "reference_image",
-            "shape": 7,
-            "type": "IMAGE",
-            "link": 245
-          }
-        ],
-        "outputs": [
-          {
-            "name": "latents_dict",
-            "type": "HYVID15LATENTSDICT",
-            "links": [
-              119,
-              120,
-              216
-            ]
-          },
-          {
-            "name": "height",
-            "type": "INT",
-            "links": [
-              122
-            ]
-          },
-          {
-            "name": "width",
-            "type": "INT",
-            "links": [
-              123
-            ]
-          },
-          {
-            "name": "n_tokens",
-            "type": "INT",
-            "links": [
-              217
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
-          "Node name for S&R": "HyVideo15LatentsPrepare"
-        },
-        "widgets_values": [
-          "16:9",
-          "bfloat16"
-        ]
-      },
-      {
-        "id": 46,
-        "type": "HyVideo15VaeDecode",
-        "pos": [
-          1445.814208984375,
-          537.40380859375
-        ],
-        "size": [
-          271.3999938964844,
-          190
-        ],
-        "flags": {},
-        "order": 21,
-        "mode": 0,
-        "inputs": [
-          {
-            "name": "latents",
-            "type": "HYVID15TRANSFORMERLATENT",
-            "link": 208
-          },
-          {
-            "name": "vae",
-            "type": "HYVID15VAE",
-            "link": 205
-          },
-          {
-            "name": "hyvid_cfg",
-            "type": "HYVID15CFG",
-            "link": 230
-          },
-          {
-            "name": "sr_out",
-            "shape": 7,
-            "type": "HYVID15SROUT",
-            "link": 194
-          }
-        ],
-        "outputs": [
-          {
-            "name": "image",
-            "type": "IMAGE",
-            "links": [
-              91
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
-          "Node name for S&R": "HyVideo15VaeDecode"
-        },
-        "widgets_values": [
-          "pt",
-          "bfloat16",
-          false,
-          false
-        ]
-      },
-      {
-        "id": 48,
-        "type": "HyVideo15GlyphByT5",
-        "pos": [
-          642.738525390625,
-          206.3159942626953
-        ],
-        "size": [
-          270.8599548339844,
-          98
-        ],
-        "flags": {},
-        "order": 10,
-        "mode": 0,
-        "inputs": [
-          {
-            "name": "byt5_kwargs",
-            "type": "HYVID15BYT5KWARGS",
-            "link": 95
-          },
-          {
-            "name": "prompt_format",
-            "type": "HYVID15MULTILINGUALPROMPTFORMAT",
-            "link": 96
-          },
-          {
-            "name": "hyvid_cfg",
-            "shape": 7,
-            "type": "HYVID15CFG",
-            "link": 115
-          }
-        ],
-        "outputs": [
-          {
-            "name": "extra_kwargs",
-            "type": "HYVID15EXTRAKWARGS",
-            "links": [
-              215
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
-          "Node name for S&R": "HyVideo15GlyphByT5"
-        },
-        "widgets_values": [
-          false
-        ]
-      },
-      {
-        "id": 49,
-        "type": "HyVideo15TextEncode",
-        "pos": [
-          646.3326416015625,
-          370.1129455566406
-        ],
-        "size": [
-          272.431640625,
-          142
-        ],
-        "flags": {},
-        "order": 9,
-        "mode": 0,
-        "inputs": [
-          {
-            "name": "text_encoder",
-            "type": "HYVID15TEXTENCODER",
-            "link": 101
-          },
-          {
-            "name": "text_encoder_2",
-            "type": "HYVID15TEXTENCODER",
-            "link": 102
-          },
-          {
-            "name": "hyvid_cfg",
-            "type": "HYVID15CFG",
-            "link": 113
-          },
-          {
-            "name": "reference_image",
-            "shape": 7,
-            "type": "IMAGE",
-            "link": null
-          }
-        ],
-        "outputs": [
-          {
-            "name": "hyvid_embeds",
-            "type": "HYVIDEMBEDS",
-            "links": [
-              213
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
-          "Node name for S&R": "HyVideo15TextEncode"
-        },
-        "widgets_values": [
-          false,
-          0
-        ]
-      },
-      {
-        "id": 50,
-        "type": "HyVideo15VisionEncode",
-        "pos": [
-          977.1890258789062,
-          323.9595947265625
-        ],
-        "size": [
-          321.41796875,
-          190
-        ],
-        "flags": {},
-        "order": 13,
-        "mode": 0,
-        "inputs": [
-          {
-            "name": "vision_encoder",
-            "type": "HYVID15VISIONENCODER",
-            "link": 108
-          },
-          {
-            "name": "hyvid_cfg",
-            "type": "HYVID15CFG",
-            "link": 112
-          },
-          {
-            "name": "latents_dict",
-            "type": "HYVID15LATENTSDICT",
-            "link": 120
-          },
-          {
-            "name": "reference_image",
-            "shape": 7,
-            "type": "IMAGE",
-            "link": 239
-          }
-        ],
-        "outputs": [
-          {
-            "name": "vision_states",
-            "type": "HYVID15VISIONSTATES",
-            "links": [
-              214
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
-          "Node name for S&R": "HyVideo15VisionEncode"
-        },
-        "widgets_values": [
-          "bfloat16",
-          false,
-          1152,
-          1152
-        ]
-      },
-      {
-        "id": 51,
-        "type": "HyVideo15VaeEncode",
-        "pos": [
-          621.5018310546875,
-          -32.69036865234375
-        ],
-        "size": [
-          273.7310485839844,
-          166
-        ],
-        "flags": {},
-        "order": 14,
-        "mode": 0,
-        "inputs": [
-          {
-            "name": "vae",
-            "type": "HYVID15VAE",
-            "link": 103
-          },
-          {
-            "name": "latents_dict",
-            "type": "HYVID15LATENTSDICT",
-            "link": 119
-          },
-          {
-            "name": "hyvid_cfg",
-            "type": "HYVID15CFG",
-            "link": 110
-          },
-          {
-            "name": "reference_image",
-            "shape": 7,
-            "type": "IMAGE",
-            "link": 237
-          },
-          {
-            "name": "height",
-            "type": "INT",
-            "widget": {
-              "name": "height"
-            },
-            "link": 122
-          },
-          {
-            "name": "width",
-            "type": "INT",
-            "widget": {
-              "name": "width"
-            },
-            "link": 123
-          }
-        ],
-        "outputs": [
-          {
-            "name": "vae_concat",
-            "type": "HYVID15VAECONCAT",
-            "links": [
-              212
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
-          "Node name for S&R": "HyVideo15VaeEncode"
-        },
-        "widgets_values": [
-          768,
-          512,
-          false
-        ]
-      },
-      {
-        "id": 52,
-        "type": "HyVideo15Byt5Loader",
-        "pos": [
-          -761.2127685546875,
-          21.985183715820312
-        ],
-        "size": [
-          270,
-          126
-        ],
-        "flags": {},
-        "order": 2,
-        "mode": 0,
-        "inputs": [],
-        "outputs": [
-          {
-            "name": "byt5_kwargs",
-            "type": "HYVID15BYT5KWARGS",
-            "links": [
-              95,
-              198
-            ]
-          },
-          {
-            "name": "prompt_format",
-            "type": "HYVID15MULTILINGUALPROMPTFORMAT",
-            "links": [
-              96,
-              199
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
-          "Node name for S&R": "HyVideo15Byt5Loader"
-        },
-        "widgets_values": [
-          "/apdcephfs_gy2/share_302986114/hunyuan_comfyui_prd/workspace/jeromema/20251104150124/global_step0/ComfyUI/models/text_encoders",
-          "main_device",
-          256
-        ]
-      },
-      {
-        "id": 54,
-        "type": "HyVideo15VaeLoader",
-        "pos": [
-          -762.3943481445312,
-          382.373291015625
-        ],
-        "size": [
-          362.4615173339844,
-          82
-        ],
-        "flags": {},
-        "order": 4,
-        "mode": 0,
-        "inputs": [],
-        "outputs": [
-          {
-            "name": "model",
-            "type": "HYVID15VAE",
-            "links": [
-              103,
-              203,
-              204,
-              205,
-              206,
-              218
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
-          "Node name for S&R": "HyVideo15VaeLoader"
-        },
-        "widgets_values": [
-          "/apdcephfs_gy2/share_302986114/hunyuan_comfyui_prd/workspace/jeromema/20251104150124/global_step0/ComfyUI/models/vae/hyvideo15",
-          "main_device"
-        ]
-      },
-      {
-        "id": 55,
-        "type": "HyVideo15TextEncoderLoader",
-        "pos": [
-          -792.9149780273438,
-          208.76483154296875
-        ],
-        "size": [
-          417.1968688964844,
-          126
-        ],
-        "flags": {},
-        "order": 3,
-        "mode": 0,
-        "inputs": [],
-        "outputs": [
-          {
-            "name": "text_encoder",
-            "type": "HYVID15TEXTENCODER",
-            "links": [
-              101,
-              200
-            ]
-          },
-          {
-            "name": "text_encoder_2",
-            "type": "HYVID15TEXTENCODER",
-            "links": [
-              102,
-              201
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
-          "Node name for S&R": "HyVideo15TextEncoderLoader"
-        },
-        "widgets_values": [
-          "/apdcephfs_gy2/share_302986114/hunyuan_comfyui_prd/workspace/jeromema/20251104150124/global_step0/ComfyUI/models/text_encoders/hyvideo15",
-          "llm",
-          "main_device"
-        ]
-      },
-      {
-        "id": 56,
-        "type": "HyVideo15VisionEncoderLoader",
-        "pos": [
-          -1259.216552734375,
-          349.0804748535156
-        ],
-        "size": [
-          429.3990173339844,
-          130
-        ],
-        "flags": {},
-        "order": 1,
-        "mode": 0,
-        "inputs": [],
-        "outputs": [
-          {
-            "name": "model",
-            "type": "HYVID15VISIONENCODER",
-            "links": [
-              108,
-              202
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
-          "Node name for S&R": "HyVideo15VisionEncoderLoader"
-        },
-        "widgets_values": [
-          "/apdcephfs_gy2/share_302986114/hunyuan_comfyui_prd/workspace/jeromema/20251104150124/global_step0/ComfyUI/models/clip_vision/hyvideo15",
-          "siglip",
-          "main_device",
-          "token"
-        ]
-      },
-      {
-        "id": 58,
-        "type": "HyVideo15TransformerLoader",
-        "pos": [
-          -1244.3223876953125,
-          74.19621276855469
-        ],
-        "size": [
-          411.2017517089844,
-          198
-        ],
-        "flags": {},
-        "order": 0,
-        "mode": 0,
-        "inputs": [],
-        "outputs": [
-          {
-            "name": "model",
-            "type": "HYVID15TRANSFORMER",
-            "links": [
-              211
-            ]
-          },
-          {
-            "name": "config",
-            "type": "HYVID15TRANSFORMERCONFIG",
-            "links": [
-              106
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
-          "Node name for S&R": "HyVideo15TransformerLoader"
-        },
-        "widgets_values": [
-          "/apdcephfs_gy2/share_302986114/hunyuan_comfyui_prd/workspace/jeromema/20251104150124/global_step0/ComfyUI/models/diffusion_models/hyvideo15",
-          "480p",
-          "i2v",
-          "main_device",
-          "bfloat16",
-          "flash"
-        ]
-      },
-      {
-        "id": 60,
-        "type": "HyVideoSrTransformer",
-        "pos": [
-          518.0243530273438,
-          723.8661499023438
-        ],
-        "size": [
-          310.783203125,
-          346
-        ],
-        "flags": {},
-        "order": 19,
-        "mode": 4,
-        "inputs": [
-          {
-            "name": "hyvid_cfg",
-            "type": "HYVID15CFG",
-            "link": 232
-          },
-          {
-            "name": "transformer",
-            "type": "HYVID15TRANSFORMER",
-            "link": 152
-          },
-          {
-            "name": "vae_concat",
-            "type": "HYVID15VAECONCAT",
-            "link": 150
-          },
-          {
-            "name": "hyvid_embeds",
-            "type": "HYVIDEMBEDS",
-            "link": 170
-          },
-          {
-            "name": "vision_states",
-            "type": "HYVID15VISIONSTATES",
-            "link": 172
-          },
-          {
-            "name": "extra_kwargs",
-            "type": "HYVID15EXTRAKWARGS",
-            "link": 169
-          },
-          {
-            "name": "lantens_dict",
-            "type": "HYVID15LATENTSDICT",
-            "link": 181
-          },
-          {
-            "name": "n_tokens",
-            "type": "INT",
-            "widget": {
-              "name": "n_tokens"
-            },
-            "link": 188
-          }
-        ],
-        "outputs": [
-          {
-            "name": "latent",
-            "type": "HYVID15TRANSFORMERLATENT",
-            "links": [
-              191
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "f37aa15e5b41fd9802168da06bca80e503df3350",
-          "Node name for S&R": "HyVideoSrTransformer"
-        },
-        "widgets_values": [
-          "bfloat16",
-          50,
-          8,
-          false,
-          true,
-          true,
-          0,
-          0
-        ]
-      },
-      {
-        "id": 62,
-        "type": "HyVideo15GlyphByT5",
-        "pos": [
-          138.73048400878906,
-          1004.7918701171875
-        ],
-        "size": [
-          270.8599548339844,
-          98
-        ],
-        "flags": {},
-        "order": 11,
-        "mode": 4,
-        "inputs": [
-          {
-            "name": "byt5_kwargs",
-            "type": "HYVID15BYT5KWARGS",
-            "link": 198
-          },
-          {
-            "name": "prompt_format",
-            "type": "HYVID15MULTILINGUALPROMPTFORMAT",
-            "link": 199
-          },
-          {
-            "name": "hyvid_cfg",
-            "shape": 7,
-            "type": "HYVID15CFG",
-            "link": 233
-          }
-        ],
-        "outputs": [
-          {
-            "name": "extra_kwargs",
-            "type": "HYVID15EXTRAKWARGS",
-            "links": [
-              169
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "f37aa15e5b41fd9802168da06bca80e503df3350",
-          "Node name for S&R": "HyVideo15GlyphByT5"
-        },
-        "widgets_values": [
-          false
-        ]
-      },
-      {
-        "id": 63,
-        "type": "HyVideo15TextEncode",
-        "pos": [
-          137.1542510986328,
-          1208.3463134765625
-        ],
-        "size": [
-          272.431640625,
-          142
-        ],
-        "flags": {},
-        "order": 12,
-        "mode": 4,
-        "inputs": [
-          {
-            "name": "text_encoder",
-            "type": "HYVID15TEXTENCODER",
-            "link": 200
-          },
-          {
-            "name": "text_encoder_2",
-            "type": "HYVID15TEXTENCODER",
-            "link": 201
-          },
-          {
-            "name": "hyvid_cfg",
-            "type": "HYVID15CFG",
-            "link": 236
-          },
-          {
-            "name": "reference_image",
-            "shape": 7,
-            "type": "IMAGE",
-            "link": null
-          }
-        ],
-        "outputs": [
-          {
-            "name": "hyvid_embeds",
-            "type": "HYVIDEMBEDS",
-            "links": [
-              170
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "f37aa15e5b41fd9802168da06bca80e503df3350",
-          "Node name for S&R": "HyVideo15TextEncode"
-        },
-        "widgets_values": [
-          false,
-          0
-        ]
-      },
-      {
-        "id": 64,
-        "type": "HyVideo15VisionEncode",
-        "pos": [
-          519.609375,
-          1141.9036865234375
-        ],
-        "size": [
-          321.41796875,
-          190
-        ],
-        "flags": {},
-        "order": 17,
-        "mode": 4,
-        "inputs": [
-          {
-            "name": "vision_encoder",
-            "type": "HYVID15VISIONENCODER",
-            "link": 202
-          },
-          {
-            "name": "hyvid_cfg",
-            "type": "HYVID15CFG",
-            "link": 235
-          },
-          {
-            "name": "latents_dict",
-            "type": "HYVID15LATENTSDICT",
-            "link": 180
-          },
-          {
-            "name": "reference_image",
-            "shape": 7,
-            "type": "IMAGE",
-            "link": 243
-          }
-        ],
-        "outputs": [
-          {
-            "name": "vision_states",
-            "type": "HYVID15VISIONSTATES",
-            "links": [
-              172
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "f37aa15e5b41fd9802168da06bca80e503df3350",
-          "Node name for S&R": "HyVideo15VisionEncode"
-        },
-        "widgets_values": [
-          "bfloat16",
-          false,
-          1151,
-          1152
-        ]
-      },
-      {
-        "id": 67,
-        "type": "HyVideoSrVaeEncode",
-        "pos": [
-          114.32423400878906,
-          734.7219848632812
-        ],
-        "size": [
-          288.5171813964844,
-          186
-        ],
-        "flags": {},
-        "order": 18,
-        "mode": 4,
-        "inputs": [
-          {
-            "name": "vae",
-            "type": "HYVID15VAE",
-            "link": 203
-          },
-          {
-            "name": "latents_dict",
-            "type": "HYVID15LATENTSDICT",
-            "link": 179
-          },
-          {
-            "name": "hyvid_cfg",
-            "type": "HYVID15CFG",
-            "link": 231
-          },
-          {
-            "name": "upsampler",
-            "type": "UPASAMPLER",
-            "link": 153
-          },
-          {
-            "name": "reference_image",
-            "shape": 7,
-            "type": "IMAGE",
-            "link": 241
-          },
-          {
-            "name": "height",
-            "type": "INT",
-            "widget": {
-              "name": "height"
-            },
-            "link": 189
-          },
-          {
-            "name": "width",
-            "type": "INT",
-            "widget": {
-              "name": "width"
-            },
-            "link": 190
-          }
-        ],
-        "outputs": [
-          {
-            "name": "v",
-            "type": "HYVID15VAECONCAT",
-            "links": [
-              150
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "f37aa15e5b41fd9802168da06bca80e503df3350",
-          "Node name for S&R": "HyVideoSrVaeEncode"
-        },
-        "widgets_values": [
-          true,
-          512,
-          false
-        ]
-      },
-      {
-        "id": 70,
-        "type": "HyVidelSrTransformerUpsamplerLoader",
-        "pos": [
-          -679.65087890625,
-          759.181884765625
-        ],
-        "size": [
-          348.8853454589844,
-          194
-        ],
-        "flags": {},
-        "order": 6,
-        "mode": 4,
-        "inputs": [],
-        "outputs": [
-          {
-            "name": "model",
-            "type": "HYVID15TRANSFORMER",
-            "links": [
-              152
-            ]
-          },
-          {
-            "name": "config",
-            "type": "HYVID15TRANSFORMERCONFIG",
-            "links": [
-              220
-            ]
-          },
-          {
-            "name": "upsampler",
-            "type": "UPASAMPLER",
-            "links": [
-              153
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "f37aa15e5b41fd9802168da06bca80e503df3350",
-          "Node name for S&R": "HyVidelSrTransformerUpsamplerLoader"
-        },
-        "widgets_values": [
-          "/apdcephfs_gy2/share_302986114/hunyuan_comfyui_prd/workspace/jeromema/20251104150124/global_step0/ComfyUI/models/upscale_models/hyvideo15",
-          "/apdcephfs_gy2/share_302986114/hunyuan_comfyui_prd/workspace/jeromema/20251104150124/global_step0/ComfyUI/models/diffusion_models/hyvideo15",
-          "480p",
-          "i2v",
-          "bfloat16"
-        ]
-      },
-      {
-        "id": 77,
-        "type": "HyVideoSrLatentsPrepare",
-        "pos": [
-          -255.8341064453125,
-          810.7806396484375
-        ],
-        "size": [
-          314.4458923339844,
-          142
-        ],
-        "flags": {},
-        "order": 16,
-        "mode": 4,
-        "inputs": [
-          {
-            "name": "hyvid_cfg",
-            "type": "HYVID15CFG",
-            "link": 229
-          },
-          {
-            "name": "vae",
-            "type": "HYVID15VAE",
-            "link": 218
-          },
-          {
-            "name": "transformer_latent",
-            "shape": 7,
-            "type": "HYVID15TRANSFORMERLATENT",
-            "link": 209
-          },
-          {
-            "name": "reference_image",
-            "shape": 7,
-            "type": "IMAGE",
-            "link": 240
-          }
-        ],
-        "outputs": [
-          {
-            "name": "latents_dict",
-            "type": "HYVID15LATENTSDICT",
-            "links": [
-              179,
-              180,
-              181
-            ]
-          },
-          {
-            "name": "height",
-            "type": "INT",
-            "links": [
-              189
-            ]
-          },
-          {
-            "name": "width",
-            "type": "INT",
-            "links": [
-              190
-            ]
-          },
-          {
-            "name": "n_tokens",
-            "type": "INT",
-            "links": [
-              188
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "f37aa15e5b41fd9802168da06bca80e503df3350",
-          "Node name for S&R": "HyVideoSrLatentsPrepare"
-        },
-        "widgets_values": [
-          "",
-          "bfloat16"
-        ]
-      },
-      {
-        "id": 79,
-        "type": "HyVidelSrVaeDecoder",
-        "pos": [
-          895.0298461914062,
-          735.1148071289062
-        ],
-        "size": [
-          270,
-          146
-        ],
-        "flags": {},
-        "order": 20,
-        "mode": 4,
-        "inputs": [
-          {
-            "name": "latents",
-            "type": "HYVID15TRANSFORMERLATENT",
-            "link": 191
-          },
-          {
-            "name": "vae",
-            "type": "HYVID15VAE",
-            "link": 204
-          },
-          {
-            "name": "hyvid_cfg",
-            "type": "HYVID15CFG",
-            "link": 234
-          }
-        ],
-        "outputs": [
-          {
-            "name": "sr_out",
-            "type": "HYVID15SROUT",
-            "links": [
-              194
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "f37aa15e5b41fd9802168da06bca80e503df3350",
-          "Node name for S&R": "HyVidelSrVaeDecoder"
-        },
-        "widgets_values": [
-          "pt",
-          "bfloat16",
-          false
-        ]
-      },
-      {
-        "id": 80,
-        "type": "HyVideo15Transformer",
-        "pos": [
-          997.1323852539062,
-          -71.65708923339844
-        ],
-        "size": [
-          310.783203125,
-          346
-        ],
-        "flags": {},
-        "order": 15,
-        "mode": 0,
-        "inputs": [
-          {
-            "name": "hyvid_cfg",
-            "type": "HYVID15CFG",
-            "link": 210
-          },
-          {
-            "name": "transformer",
-            "type": "HYVID15TRANSFORMER",
-            "link": 211
-          },
-          {
-            "name": "vae_concat",
-            "type": "HYVID15VAECONCAT",
-            "link": 212
-          },
-          {
-            "name": "hyvid_embeds",
-            "type": "HYVIDEMBEDS",
-            "link": 213
-          },
-          {
-            "name": "vision_states",
-            "type": "HYVID15VISIONSTATES",
-            "link": 214
-          },
-          {
-            "name": "extra_kwargs",
-            "type": "HYVID15EXTRAKWARGS",
-            "link": 215
-          },
-          {
-            "name": "latents_dict",
-            "type": "HYVID15LATENTSDICT",
-            "link": 216
-          },
-          {
-            "name": "n_tokens",
-            "type": "INT",
-            "widget": {
-              "name": "n_tokens"
-            },
-            "link": 217
-          }
-        ],
-        "outputs": [
-          {
-            "name": "transformer_latent",
-            "type": "HYVID15TRANSFORMERLATENT",
-            "links": [
-              208,
-              209
-            ]
-          }
-        ],
-        "properties": {
-          "aux_id": "ComfyUI-HunyuanVideoLeoWrapper.git",
-          "ver": "9fb197be72504bdfedc5e1c090357ef0f1129623",
-          "Node name for S&R": "HyVideo15Transformer"
-        },
-        "widgets_values": [
-          1,
-          50,
-          "bfloat16",
-          false,
-          0,
-          0,
-          true,
-          0
-        ]
-      },
-      {
-        "id": 82,
-        "type": "LoadImage",
-        "pos": [
-          140.29209899902344,
-          184.56858825683594
-        ],
-        "size": [
-          270,
-          314
-        ],
-        "flags": {},
-        "order": 5,
-        "mode": 0,
-        "inputs": [],
-        "outputs": [
-          {
-            "name": "IMAGE",
-            "type": "IMAGE",
-            "links": [
-              237,
-              239,
-              240,
-              241,
-              243,
-              244,
-              245
-            ]
-          },
-          {
-            "name": "MASK",
-            "type": "MASK",
-            "links": null
-          }
-        ],
-        "properties": {
-          "cnr_id": "comfy-core",
-          "ver": "0.3.39",
-          "Node name for S&R": "LoadImage"
-        },
-        "widgets_values": [
-          "企业微信截图_85cc466a-ff13-4687-9498-3aa8fff1e119.png",
-          "image"
-        ]
-      }
-    ],
-    "links": [
-      [
-        46,
-        30,
-        0,
-        33,
-        0,
-        "VIDEO"
-      ],
-      [
-        91,
-        46,
-        0,
-        30,
-        0,
-        "IMAGE"
-      ],
-      [
-        95,
-        52,
-        0,
-        48,
-        0,
-        "HYVID15BYT5KWARGS"
-      ],
-      [
-        96,
-        52,
-        1,
-        48,
-        1,
-        "HYVID15MULTILINGUALPROMPTFORMAT"
-      ],
-      [
-        101,
-        55,
-        0,
-        49,
-        0,
-        "HYVID15TEXTENCODER"
-      ],
-      [
-        102,
-        55,
-        1,
-        49,
-        1,
-        "HYVID15TEXTENCODER"
-      ],
-      [
-        103,
-        54,
-        0,
-        51,
-        0,
-        "HYVID15VAE"
-      ],
-      [
-        106,
-        58,
-        1,
-        42,
-        0,
-        "HYVID15TRANSFORMERCONFIG"
-      ],
-      [
-        108,
-        56,
-        0,
-        50,
-        0,
-        "HYVID15VISIONENCODER"
-      ],
-      [
-        110,
-        42,
-        0,
-        51,
-        2,
-        "HYVIDCFG"
-      ],
-      [
-        111,
-        42,
-        0,
-        43,
-        0,
-        "HYVIDCFG"
-      ],
-      [
-        112,
-        42,
-        0,
-        50,
-        1,
-        "HYVIDCFG"
-      ],
-      [
-        113,
-        42,
-        0,
-        49,
-        2,
-        "HYVIDCFG"
-      ],
-      [
-        115,
-        42,
-        0,
-        48,
-        2,
-        "HYVIDCFG"
-      ],
-      [
-        119,
-        43,
-        0,
-        51,
-        1,
-        "HYVID15LATENTSDICT"
-      ],
-      [
-        120,
-        43,
-        0,
-        50,
-        2,
-        "HYVID15LATENTSDICT"
-      ],
-      [
-        122,
-        43,
-        1,
-        51,
-        4,
-        "INT"
-      ],
-      [
-        123,
-        43,
-        2,
-        51,
-        5,
-        "INT"
-      ],
-      [
-        150,
-        67,
-        0,
-        60,
-        2,
-        "HYVID15VAECONCAT"
-      ],
-      [
-        152,
-        70,
-        0,
-        60,
-        1,
-        "HYVID15TRANSFORMER"
-      ],
-      [
-        153,
-        70,
-        2,
-        67,
-        3,
-        "UPASAMPLER"
-      ],
-      [
-        169,
-        62,
-        0,
-        60,
-        5,
-        "HYVID15EXTRAKWARGS"
-      ],
-      [
-        170,
-        63,
-        0,
-        60,
-        3,
-        "HYVIDEMBEDS"
-      ],
-      [
-        172,
-        64,
-        0,
-        60,
-        4,
-        "HYVID15VISIONSTATES"
-      ],
-      [
-        179,
-        77,
-        0,
-        67,
-        1,
-        "HYVID15LATENTSDICT"
-      ],
-      [
-        180,
-        77,
-        0,
-        64,
-        2,
-        "HYVID15LATENTSDICT"
-      ],
-      [
-        181,
-        77,
-        0,
-        60,
-        6,
-        "HYVID15LATENTSDICT"
-      ],
-      [
-        188,
-        77,
-        3,
-        60,
-        7,
-        "INT"
-      ],
-      [
-        189,
-        77,
-        1,
-        67,
-        5,
-        "INT"
-      ],
-      [
-        190,
-        77,
-        2,
-        67,
-        6,
-        "INT"
-      ],
-      [
-        191,
-        60,
-        0,
-        79,
-        0,
-        "HYVID15TRANSFORMERLATENT"
-      ],
-      [
-        194,
-        79,
-        0,
-        46,
-        3,
-        "HYVID15SROUT"
-      ],
-      [
-        198,
-        52,
-        0,
-        62,
-        0,
-        "HYVID15BYT5KWARGS"
-      ],
-      [
-        199,
-        52,
-        1,
-        62,
-        1,
-        "HYVID15MULTILINGUALPROMPTFORMAT"
-      ],
-      [
-        200,
-        55,
-        0,
-        63,
-        0,
-        "HYVID15TEXTENCODER"
-      ],
-      [
-        201,
-        55,
-        1,
-        63,
-        1,
-        "HYVID15TEXTENCODER"
-      ],
-      [
-        202,
-        56,
-        0,
-        64,
-        0,
-        "HYVID15VISIONENCODER"
-      ],
-      [
-        203,
-        54,
-        0,
-        67,
-        0,
-        "HYVID15VAE"
-      ],
-      [
-        204,
-        54,
-        0,
-        79,
-        1,
-        "HYVID15VAE"
-      ],
-      [
-        205,
-        54,
-        0,
-        46,
-        1,
-        "HYVID15VAE"
-      ],
-      [
-        206,
-        54,
-        0,
-        43,
-        1,
-        "HYVID15VAE"
-      ],
-      [
-        208,
-        80,
-        0,
-        46,
-        0,
-        "HYVID15TRANSFORMERLATENT"
-      ],
-      [
-        209,
-        80,
-        0,
-        77,
-        2,
-        "HYVID15TRANSFORMERLATENT"
-      ],
-      [
-        210,
-        42,
-        0,
-        80,
-        0,
-        "HYVID15CFG"
-      ],
-      [
-        211,
-        58,
-        0,
-        80,
-        1,
-        "HYVID15TRANSFORMER"
-      ],
-      [
-        212,
-        51,
-        0,
-        80,
-        2,
-        "HYVID15VAECONCAT"
-      ],
-      [
-        213,
-        49,
-        0,
-        80,
-        3,
-        "HYVIDEMBEDS"
-      ],
-      [
-        214,
-        50,
-        0,
-        80,
-        4,
-        "HYVID15VISIONSTATES"
-      ],
-      [
-        215,
-        48,
-        0,
-        80,
-        5,
-        "HYVID15EXTRAKWARGS"
-      ],
-      [
-        216,
-        43,
-        0,
-        80,
-        6,
-        "HYVID15LATENTSDICT"
-      ],
-      [
-        217,
-        43,
-        3,
-        80,
-        7,
-        "INT"
-      ],
-      [
-        218,
-        54,
-        0,
-        77,
-        1,
-        "HYVID15VAE"
-      ],
-      [
-        220,
-        70,
-        1,
-        42,
-        1,
-        "HYVID15TRANSFORMERCONFIG"
-      ],
-      [
-        229,
-        42,
-        0,
-        77,
-        0,
-        "HYVID15CFG"
-      ],
-      [
-        230,
-        42,
-        0,
-        46,
-        2,
-        "HYVID15CFG"
-      ],
-      [
-        231,
-        42,
-        0,
-        67,
-        2,
-        "HYVID15CFG"
-      ],
-      [
-        232,
-        42,
-        0,
-        60,
-        0,
-        "HYVID15CFG"
-      ],
-      [
-        233,
-        42,
-        0,
-        62,
-        2,
-        "HYVID15CFG"
-      ],
-      [
-        234,
-        42,
-        0,
-        79,
-        2,
-        "HYVID15CFG"
-      ],
-      [
-        235,
-        42,
-        0,
-        64,
-        1,
-        "HYVID15CFG"
-      ],
-      [
-        236,
-        42,
-        0,
-        63,
-        2,
-        "HYVID15CFG"
-      ],
-      [
-        237,
-        82,
-        0,
-        51,
-        3,
-        "IMAGE"
-      ],
-      [
-        239,
-        82,
-        0,
-        50,
-        3,
-        "IMAGE"
-      ],
-      [
-        240,
-        82,
-        0,
-        77,
-        3,
-        "IMAGE"
-      ],
-      [
-        241,
-        82,
-        0,
-        67,
-        4,
-        "IMAGE"
-      ],
-      [
-        243,
-        82,
-        0,
-        64,
-        3,
-        "IMAGE"
-      ],
-      [
-        244,
-        82,
-        0,
-        42,
-        2,
-        "IMAGE"
-      ],
-      [
-        245,
-        82,
-        0,
-        43,
-        3,
-        "IMAGE"
+      "widgets_values": [
+        30
       ]
-    ],
-    "groups": [
-      {
-        "id": 1,
-        "title": "模型加载",
-        "bounding": [
-          -1296.5465087890625,
-          -36.09629821777344,
-          928.8696899414062,
-          526.3731689453125
-        ],
-        "color": "#3f789e",
-        "font_size": 24,
-        "flags": {}
-      },
-      {
-        "id": 2,
-        "title": "参数准备",
-        "bounding": [
-          -339.4078063964844,
-          -81.28311920166016,
-          831.9130249023438,
-          613.710205078125
-        ],
-        "color": "#A88",
-        "font_size": 24,
-        "flags": {}
-      },
-      {
-        "id": 3,
-        "title": "视频生成",
-        "bounding": [
-          547.538818359375,
-          -113.03947448730469,
-          794.5728149414062,
-          642.0199584960938
-        ],
-        "color": "#8A8",
-        "font_size": 24,
-        "flags": {}
-      },
-      {
-        "id": 5,
-        "title": "输出",
-        "bounding": [
-          1380.737548828125,
-          472.8053894042969,
-          384.2930908203125,
-          906.1813354492188
-        ],
-        "color": "#3f789e",
-        "font_size": 24,
-        "flags": {}
-      },
-      {
-        "id": 6,
-        "title": "超分",
-        "bounding": [
-          -721.0780639648438,
-          630.8026733398438,
-          1918.473388671875,
-          829.46484375
-        ],
-        "color": "#a1309b",
-        "font_size": 24,
-        "flags": {}
-      }
-    ],
-    "config": {},
-    "extra": {
-      "ds": {
-        "scale": 0.7513148009015777,
-        "offset": [
-          733.847399470203,
-          -248.66472888288166
-        ]
-      },
-      "frontendVersion": "1.20.7"
     },
-    "version": 0.4
-  }
+    {
+      "id": 33,
+      "type": "SaveVideo",
+      "pos": [
+        1153.5599365234375,
+        1035.445068359375
+      ],
+      "size": [
+        270,
+        456.2692565917969
+      ],
+      "flags": {},
+      "order": 21,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 46
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.39",
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "video/ComfyUI",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 42,
+      "type": "HyVideo15CFG",
+      "pos": [
+        -295.60504150390625,
+        -16.440702438354492
+      ],
+      "size": [
+        400,
+        514
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "transformer_config",
+          "shape": 7,
+          "type": "HYVID15TRANSFORMERCONFIG",
+          "link": 106
+        },
+        {
+          "name": "sr_transformer_config",
+          "shape": 7,
+          "type": "HYVID15TRANSFORMERCONFIG",
+          "link": 220
+        },
+        {
+          "name": "reference_image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 249
+        },
+        {
+          "name": "scheduler",
+          "type": "HYVID15FLOWMATCHDISCRETESCHEDULER",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "hyvid_cfg",
+          "type": "HYVID15CFG",
+          "links": [
+            110,
+            111,
+            112,
+            113,
+            115,
+            210,
+            229,
+            230,
+            231,
+            232,
+            234,
+            235
+          ]
+        },
+        {
+          "name": "hyvid_sr_cfg",
+          "type": "HYVID15CFG",
+          "links": []
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
+        "Node name for S&R": "HyVideo15CFG"
+      },
+      "widgets_values": [
+        "The hiker begins walking forward along the trail, causing the water bottle to swing rhythmically with each step. The camera gradually pulls back and rises to reveal a vast desert landscape stretching out ahead, while the sun position shifts from afternoon to dusk, casting increasingly longer shadows across the terrain as the figure becomes smaller in the frame.",
+        "",
+        0,
+        7,
+        10,
+        1,
+        5,
+        1317562501,
+        "randomize",
+        "i2v"
+      ]
+    },
+    {
+      "id": 43,
+      "type": "HyVideo15LatentsPrepare",
+      "pos": [
+        125.06942749023438,
+        -28.921161651611328
+      ],
+      "size": [
+        295.0044860839844,
+        142
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "hyvid_cfg",
+          "type": "HYVID15CFG",
+          "link": 111
+        },
+        {
+          "name": "vae",
+          "type": "HYVID15VAE",
+          "link": 206
+        },
+        {
+          "name": "latents",
+          "shape": 7,
+          "type": "LATENT",
+          "link": null
+        },
+        {
+          "name": "reference_image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 248
+        }
+      ],
+      "outputs": [
+        {
+          "name": "latents_dict",
+          "type": "HYVID15LATENTSDICT",
+          "links": [
+            119,
+            120,
+            216
+          ]
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": [
+            122
+          ]
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "links": [
+            123
+          ]
+        },
+        {
+          "name": "n_tokens",
+          "type": "INT",
+          "links": [
+            217
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
+        "Node name for S&R": "HyVideo15LatentsPrepare"
+      },
+      "widgets_values": [
+        "16:9",
+        "bfloat16"
+      ]
+    },
+    {
+      "id": 46,
+      "type": "HyVideo15VaeDecode",
+      "pos": [
+        1154.3115234375,
+        660.6077270507812
+      ],
+      "size": [
+        271.3999938964844,
+        190
+      ],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "latents",
+          "type": "HYVID15TRANSFORMERLATENT",
+          "link": 208
+        },
+        {
+          "name": "vae",
+          "type": "HYVID15VAE",
+          "link": 205
+        },
+        {
+          "name": "hyvid_cfg",
+          "type": "HYVID15CFG",
+          "link": 230
+        },
+        {
+          "name": "sr_out",
+          "shape": 7,
+          "type": "HYVID15SROUT",
+          "link": 194
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": [
+            91
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
+        "Node name for S&R": "HyVideo15VaeDecode"
+      },
+      "widgets_values": [
+        "pt",
+        "bfloat16",
+        false
+      ]
+    },
+    {
+      "id": 48,
+      "type": "HyVideo15GlyphByT5",
+      "pos": [
+        642.738525390625,
+        206.3159942626953
+      ],
+      "size": [
+        270.8599548339844,
+        98
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "byt5_kwargs",
+          "type": "HYVID15BYT5KWARGS",
+          "link": 95
+        },
+        {
+          "name": "prompt_format",
+          "type": "HYVID15MULTILINGUALPROMPTFORMAT",
+          "link": 96
+        },
+        {
+          "name": "hyvid_cfg",
+          "shape": 7,
+          "type": "HYVID15CFG",
+          "link": 115
+        }
+      ],
+      "outputs": [
+        {
+          "name": "extra_kwargs",
+          "type": "HYVID15EXTRAKWARGS",
+          "links": [
+            215,
+            246
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
+        "Node name for S&R": "HyVideo15GlyphByT5"
+      },
+      "widgets_values": [
+        true
+      ]
+    },
+    {
+      "id": 49,
+      "type": "HyVideo15TextEncode",
+      "pos": [
+        646.3326416015625,
+        370.1129455566406
+      ],
+      "size": [
+        272.431640625,
+        142
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text_encoder",
+          "type": "HYVID15TEXTENCODER",
+          "link": 101
+        },
+        {
+          "name": "text_encoder_2",
+          "type": "HYVID15TEXTENCODER",
+          "link": 102
+        },
+        {
+          "name": "hyvid_cfg",
+          "type": "HYVID15CFG",
+          "link": 113
+        },
+        {
+          "name": "reference_image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "hyvid_embeds",
+          "type": "HYVIDEMBEDS",
+          "links": [
+            213,
+            247
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
+        "Node name for S&R": "HyVideo15TextEncode"
+      },
+      "widgets_values": [
+        true,
+        0
+      ]
+    },
+    {
+      "id": 50,
+      "type": "HyVideo15VisionEncode",
+      "pos": [
+        977.1890258789062,
+        323.9595947265625
+      ],
+      "size": [
+        321.41796875,
+        190
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "vision_encoder",
+          "type": "HYVID15VISIONENCODER",
+          "link": 108
+        },
+        {
+          "name": "hyvid_cfg",
+          "type": "HYVID15CFG",
+          "link": 112
+        },
+        {
+          "name": "latents_dict",
+          "type": "HYVID15LATENTSDICT",
+          "link": 120
+        },
+        {
+          "name": "reference_image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 255
+        }
+      ],
+      "outputs": [
+        {
+          "name": "vision_states",
+          "type": "HYVID15VISIONSTATES",
+          "links": [
+            214
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
+        "Node name for S&R": "HyVideo15VisionEncode"
+      },
+      "widgets_values": [
+        "bfloat16",
+        true,
+        1152,
+        1152
+      ]
+    },
+    {
+      "id": 51,
+      "type": "HyVideo15VaeEncode",
+      "pos": [
+        621.5018310546875,
+        -32.69036865234375
+      ],
+      "size": [
+        273.7310485839844,
+        166
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "vae",
+          "type": "HYVID15VAE",
+          "link": 103
+        },
+        {
+          "name": "latents_dict",
+          "type": "HYVID15LATENTSDICT",
+          "link": 119
+        },
+        {
+          "name": "hyvid_cfg",
+          "type": "HYVID15CFG",
+          "link": 110
+        },
+        {
+          "name": "reference_image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 253
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": 122
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": 123
+        }
+      ],
+      "outputs": [
+        {
+          "name": "vae_concat",
+          "type": "HYVID15VAECONCAT",
+          "links": [
+            212
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
+        "Node name for S&R": "HyVideo15VaeEncode"
+      },
+      "widgets_values": [
+        768,
+        512
+      ]
+    },
+    {
+      "id": 52,
+      "type": "HyVideo15Byt5Loader",
+      "pos": [
+        -761.2127685546875,
+        21.985183715820312
+      ],
+      "size": [
+        270,
+        126
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "byt5_kwargs",
+          "type": "HYVID15BYT5KWARGS",
+          "links": [
+            95
+          ]
+        },
+        {
+          "name": "prompt_format",
+          "type": "HYVID15MULTILINGUALPROMPTFORMAT",
+          "links": [
+            96
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
+        "Node name for S&R": "HyVideo15Byt5Loader"
+      },
+      "widgets_values": [
+        "None",
+        256
+      ]
+    },
+    {
+      "id": 54,
+      "type": "HyVideo15VaeLoader",
+      "pos": [
+        -762.3943481445312,
+        382.373291015625
+      ],
+      "size": [
+        362.4615173339844,
+        82
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "HYVID15VAE",
+          "links": [
+            103,
+            203,
+            204,
+            205,
+            206,
+            218
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
+        "Node name for S&R": "HyVideo15VaeLoader"
+      },
+      "widgets_values": [
+        "None"
+      ]
+    },
+    {
+      "id": 55,
+      "type": "HyVideo15TextEncoderLoader",
+      "pos": [
+        -792.9149780273438,
+        192.81483459472656
+      ],
+      "size": [
+        417.1968688964844,
+        126
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "text_encoder",
+          "type": "HYVID15TEXTENCODER",
+          "links": [
+            101
+          ]
+        },
+        {
+          "name": "text_encoder_2",
+          "type": "HYVID15TEXTENCODER",
+          "links": [
+            102
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
+        "Node name for S&R": "HyVideo15TextEncoderLoader"
+      },
+      "widgets_values": [
+        "None",
+        "llm",
+        "offload_device"
+      ]
+    },
+    {
+      "id": 56,
+      "type": "HyVideo15VisionEncoderLoader",
+      "pos": [
+        -1259.216552734375,
+        349.0804748535156
+      ],
+      "size": [
+        429.3990173339844,
+        130
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "HYVID15VISIONENCODER",
+          "links": [
+            108,
+            202
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
+        "Node name for S&R": "HyVideo15VisionEncoderLoader"
+      },
+      "widgets_values": [
+        "None",
+        "siglip",
+        "offload_device",
+        "token"
+      ]
+    },
+    {
+      "id": 58,
+      "type": "HyVideo15TransformerLoader",
+      "pos": [
+        -1242.991455078125,
+        73.53070831298828
+      ],
+      "size": [
+        411.2017517089844,
+        198
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "HYVID15TRANSFORMER",
+          "links": [
+            211
+          ]
+        },
+        {
+          "name": "config",
+          "type": "HYVID15TRANSFORMERCONFIG",
+          "links": [
+            106
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "3e3cde9463c36f763e6963a220eaec7030555df6",
+        "Node name for S&R": "HyVideo15TransformerLoader"
+      },
+      "widgets_values": [
+        "None",
+        "720p",
+        "i2v",
+        "bfloat16",
+        "flash"
+      ]
+    },
+    {
+      "id": 60,
+      "type": "HyVideoSrTransformer",
+      "pos": [
+        279.1920166015625,
+        718.123291015625
+      ],
+      "size": [
+        310.783203125,
+        346
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "hyvid_cfg",
+          "type": "HYVID15CFG",
+          "link": 232
+        },
+        {
+          "name": "transformer",
+          "type": "HYVID15TRANSFORMER",
+          "link": 152
+        },
+        {
+          "name": "vae_concat",
+          "type": "HYVID15VAECONCAT",
+          "link": 150
+        },
+        {
+          "name": "hyvid_embeds",
+          "type": "HYVIDEMBEDS",
+          "link": 247
+        },
+        {
+          "name": "vision_states",
+          "type": "HYVID15VISIONSTATES",
+          "link": 172
+        },
+        {
+          "name": "extra_kwargs",
+          "type": "HYVID15EXTRAKWARGS",
+          "link": 246
+        },
+        {
+          "name": "lantens_dict",
+          "type": "HYVID15LATENTSDICT",
+          "link": 181
+        },
+        {
+          "name": "n_tokens",
+          "type": "INT",
+          "widget": {
+            "name": "n_tokens"
+          },
+          "link": 188
+        }
+      ],
+      "outputs": [
+        {
+          "name": "latent",
+          "type": "HYVID15TRANSFORMERLATENT",
+          "links": [
+            191
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "f37aa15e5b41fd9802168da06bca80e503df3350",
+        "Node name for S&R": "HyVideoSrTransformer"
+      },
+      "widgets_values": [
+        "bfloat16",
+        50,
+        8,
+        true,
+        true,
+        true,
+        0
+      ]
+    },
+    {
+      "id": 64,
+      "type": "HyVideo15VisionEncode",
+      "pos": [
+        302.3215026855469,
+        1118.83837890625
+      ],
+      "size": [
+        321.41796875,
+        190
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "vision_encoder",
+          "type": "HYVID15VISIONENCODER",
+          "link": 202
+        },
+        {
+          "name": "hyvid_cfg",
+          "type": "HYVID15CFG",
+          "link": 235
+        },
+        {
+          "name": "latents_dict",
+          "type": "HYVID15LATENTSDICT",
+          "link": 180
+        },
+        {
+          "name": "reference_image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 252
+        }
+      ],
+      "outputs": [
+        {
+          "name": "vision_states",
+          "type": "HYVID15VISIONSTATES",
+          "links": [
+            172
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "f37aa15e5b41fd9802168da06bca80e503df3350",
+        "Node name for S&R": "HyVideo15VisionEncode"
+      },
+      "widgets_values": [
+        "bfloat16",
+        true,
+        1151,
+        1152
+      ]
+    },
+    {
+      "id": 67,
+      "type": "HyVideoSrVaeEncode",
+      "pos": [
+        -130.45787048339844,
+        974.7711791992188
+      ],
+      "size": [
+        288.5171813964844,
+        186
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "vae",
+          "type": "HYVID15VAE",
+          "link": 203
+        },
+        {
+          "name": "latents_dict",
+          "type": "HYVID15LATENTSDICT",
+          "link": 179
+        },
+        {
+          "name": "hyvid_cfg",
+          "type": "HYVID15CFG",
+          "link": 231
+        },
+        {
+          "name": "upsampler",
+          "type": "UPASAMPLER",
+          "link": 153
+        },
+        {
+          "name": "reference_image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 251
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": 189
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": 190
+        }
+      ],
+      "outputs": [
+        {
+          "name": "v",
+          "type": "HYVID15VAECONCAT",
+          "links": [
+            150
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "f37aa15e5b41fd9802168da06bca80e503df3350",
+        "Node name for S&R": "HyVideoSrVaeEncode"
+      },
+      "widgets_values": [
+        true,
+        512
+      ]
+    },
+    {
+      "id": 70,
+      "type": "HyVidelSrTransformerUpsamplerLoader",
+      "pos": [
+        -612.3428344726562,
+        716.2577514648438
+      ],
+      "size": [
+        348.8853454589844,
+        218
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 4,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "HYVID15TRANSFORMER",
+          "links": [
+            152
+          ]
+        },
+        {
+          "name": "config",
+          "type": "HYVID15TRANSFORMERCONFIG",
+          "links": [
+            220
+          ]
+        },
+        {
+          "name": "upsampler",
+          "type": "UPASAMPLER",
+          "links": [
+            153
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "f37aa15e5b41fd9802168da06bca80e503df3350",
+        "Node name for S&R": "HyVidelSrTransformerUpsamplerLoader"
+      },
+      "widgets_values": [
+        "None",
+        "None",
+        "720p",
+        "i2v",
+        "bfloat16"
+      ]
+    },
+    {
+      "id": 77,
+      "type": "HyVideoSrLatentsPrepare",
+      "pos": [
+        -149.442626953125,
+        740.5328979492188
+      ],
+      "size": [
+        314.4458923339844,
+        142
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "hyvid_cfg",
+          "type": "HYVID15CFG",
+          "link": 229
+        },
+        {
+          "name": "vae",
+          "type": "HYVID15VAE",
+          "link": 218
+        },
+        {
+          "name": "transformer_latent",
+          "shape": 7,
+          "type": "HYVID15TRANSFORMERLATENT",
+          "link": 209
+        },
+        {
+          "name": "reference_image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 250
+        }
+      ],
+      "outputs": [
+        {
+          "name": "latents_dict",
+          "type": "HYVID15LATENTSDICT",
+          "links": [
+            179,
+            180,
+            181
+          ]
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": [
+            189
+          ]
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "links": [
+            190
+          ]
+        },
+        {
+          "name": "n_tokens",
+          "type": "INT",
+          "links": [
+            188
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "f37aa15e5b41fd9802168da06bca80e503df3350",
+        "Node name for S&R": "HyVideoSrLatentsPrepare"
+      },
+      "widgets_values": [
+        "",
+        "bfloat16"
+      ]
+    },
+    {
+      "id": 79,
+      "type": "HyVidelSrVaeDecoder",
+      "pos": [
+        643.3139038085938,
+        728.5668334960938
+      ],
+      "size": [
+        270,
+        146
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "latents",
+          "type": "HYVID15TRANSFORMERLATENT",
+          "link": 191
+        },
+        {
+          "name": "vae",
+          "type": "HYVID15VAE",
+          "link": 204
+        },
+        {
+          "name": "hyvid_cfg",
+          "type": "HYVID15CFG",
+          "link": 234
+        }
+      ],
+      "outputs": [
+        {
+          "name": "sr_out",
+          "type": "HYVID15SROUT",
+          "links": [
+            194
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "f37aa15e5b41fd9802168da06bca80e503df3350",
+        "Node name for S&R": "HyVidelSrVaeDecoder"
+      },
+      "widgets_values": [
+        "pt",
+        "bfloat16"
+      ]
+    },
+    {
+      "id": 80,
+      "type": "HyVideo15Transformer",
+      "pos": [
+        997.1323852539062,
+        -71.65708923339844
+      ],
+      "size": [
+        310.783203125,
+        346
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "hyvid_cfg",
+          "type": "HYVID15CFG",
+          "link": 210
+        },
+        {
+          "name": "transformer",
+          "type": "HYVID15TRANSFORMER",
+          "link": 211
+        },
+        {
+          "name": "vae_concat",
+          "type": "HYVID15VAECONCAT",
+          "link": 212
+        },
+        {
+          "name": "hyvid_embeds",
+          "type": "HYVIDEMBEDS",
+          "link": 213
+        },
+        {
+          "name": "vision_states",
+          "type": "HYVID15VISIONSTATES",
+          "link": 214
+        },
+        {
+          "name": "extra_kwargs",
+          "type": "HYVID15EXTRAKWARGS",
+          "link": 215
+        },
+        {
+          "name": "latents_dict",
+          "type": "HYVID15LATENTSDICT",
+          "link": 216
+        },
+        {
+          "name": "n_tokens",
+          "type": "INT",
+          "widget": {
+            "name": "n_tokens"
+          },
+          "link": 217
+        }
+      ],
+      "outputs": [
+        {
+          "name": "transformer_latent",
+          "type": "HYVID15TRANSFORMERLATENT",
+          "links": [
+            208,
+            209
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin",
+        "ver": "9fb197be72504bdfedc5e1c090357ef0f1129623",
+        "Node name for S&R": "HyVideo15Transformer"
+      },
+      "widgets_values": [
+        1,
+        50,
+        "bfloat16",
+        true,
+        0,
+        true,
+        true
+      ]
+    },
+    {
+      "id": 84,
+      "type": "LoadImage",
+      "pos": [
+        161.50193786621094,
+        157.56781005859375
+      ],
+      "size": [
+        270,
+        314
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            248,
+            249,
+            250,
+            251,
+            252,
+            253,
+            255
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.39",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "1 (3).png",
+        "image"
+      ]
+    }
+  ],
+  "links": [
+    [
+      46,
+      30,
+      0,
+      33,
+      0,
+      "VIDEO"
+    ],
+    [
+      91,
+      46,
+      0,
+      30,
+      0,
+      "IMAGE"
+    ],
+    [
+      95,
+      52,
+      0,
+      48,
+      0,
+      "HYVID15BYT5KWARGS"
+    ],
+    [
+      96,
+      52,
+      1,
+      48,
+      1,
+      "HYVID15MULTILINGUALPROMPTFORMAT"
+    ],
+    [
+      101,
+      55,
+      0,
+      49,
+      0,
+      "HYVID15TEXTENCODER"
+    ],
+    [
+      102,
+      55,
+      1,
+      49,
+      1,
+      "HYVID15TEXTENCODER"
+    ],
+    [
+      103,
+      54,
+      0,
+      51,
+      0,
+      "HYVID15VAE"
+    ],
+    [
+      106,
+      58,
+      1,
+      42,
+      0,
+      "HYVID15TRANSFORMERCONFIG"
+    ],
+    [
+      108,
+      56,
+      0,
+      50,
+      0,
+      "HYVID15VISIONENCODER"
+    ],
+    [
+      110,
+      42,
+      0,
+      51,
+      2,
+      "HYVIDCFG"
+    ],
+    [
+      111,
+      42,
+      0,
+      43,
+      0,
+      "HYVIDCFG"
+    ],
+    [
+      112,
+      42,
+      0,
+      50,
+      1,
+      "HYVIDCFG"
+    ],
+    [
+      113,
+      42,
+      0,
+      49,
+      2,
+      "HYVIDCFG"
+    ],
+    [
+      115,
+      42,
+      0,
+      48,
+      2,
+      "HYVIDCFG"
+    ],
+    [
+      119,
+      43,
+      0,
+      51,
+      1,
+      "HYVID15LATENTSDICT"
+    ],
+    [
+      120,
+      43,
+      0,
+      50,
+      2,
+      "HYVID15LATENTSDICT"
+    ],
+    [
+      122,
+      43,
+      1,
+      51,
+      4,
+      "INT"
+    ],
+    [
+      123,
+      43,
+      2,
+      51,
+      5,
+      "INT"
+    ],
+    [
+      150,
+      67,
+      0,
+      60,
+      2,
+      "HYVID15VAECONCAT"
+    ],
+    [
+      152,
+      70,
+      0,
+      60,
+      1,
+      "HYVID15TRANSFORMER"
+    ],
+    [
+      153,
+      70,
+      2,
+      67,
+      3,
+      "UPASAMPLER"
+    ],
+    [
+      172,
+      64,
+      0,
+      60,
+      4,
+      "HYVID15VISIONSTATES"
+    ],
+    [
+      179,
+      77,
+      0,
+      67,
+      1,
+      "HYVID15LATENTSDICT"
+    ],
+    [
+      180,
+      77,
+      0,
+      64,
+      2,
+      "HYVID15LATENTSDICT"
+    ],
+    [
+      181,
+      77,
+      0,
+      60,
+      6,
+      "HYVID15LATENTSDICT"
+    ],
+    [
+      188,
+      77,
+      3,
+      60,
+      7,
+      "INT"
+    ],
+    [
+      189,
+      77,
+      1,
+      67,
+      5,
+      "INT"
+    ],
+    [
+      190,
+      77,
+      2,
+      67,
+      6,
+      "INT"
+    ],
+    [
+      191,
+      60,
+      0,
+      79,
+      0,
+      "HYVID15TRANSFORMERLATENT"
+    ],
+    [
+      194,
+      79,
+      0,
+      46,
+      3,
+      "HYVID15SROUT"
+    ],
+    [
+      202,
+      56,
+      0,
+      64,
+      0,
+      "HYVID15VISIONENCODER"
+    ],
+    [
+      203,
+      54,
+      0,
+      67,
+      0,
+      "HYVID15VAE"
+    ],
+    [
+      204,
+      54,
+      0,
+      79,
+      1,
+      "HYVID15VAE"
+    ],
+    [
+      205,
+      54,
+      0,
+      46,
+      1,
+      "HYVID15VAE"
+    ],
+    [
+      206,
+      54,
+      0,
+      43,
+      1,
+      "HYVID15VAE"
+    ],
+    [
+      208,
+      80,
+      0,
+      46,
+      0,
+      "HYVID15TRANSFORMERLATENT"
+    ],
+    [
+      209,
+      80,
+      0,
+      77,
+      2,
+      "HYVID15TRANSFORMERLATENT"
+    ],
+    [
+      210,
+      42,
+      0,
+      80,
+      0,
+      "HYVID15CFG"
+    ],
+    [
+      211,
+      58,
+      0,
+      80,
+      1,
+      "HYVID15TRANSFORMER"
+    ],
+    [
+      212,
+      51,
+      0,
+      80,
+      2,
+      "HYVID15VAECONCAT"
+    ],
+    [
+      213,
+      49,
+      0,
+      80,
+      3,
+      "HYVIDEMBEDS"
+    ],
+    [
+      214,
+      50,
+      0,
+      80,
+      4,
+      "HYVID15VISIONSTATES"
+    ],
+    [
+      215,
+      48,
+      0,
+      80,
+      5,
+      "HYVID15EXTRAKWARGS"
+    ],
+    [
+      216,
+      43,
+      0,
+      80,
+      6,
+      "HYVID15LATENTSDICT"
+    ],
+    [
+      217,
+      43,
+      3,
+      80,
+      7,
+      "INT"
+    ],
+    [
+      218,
+      54,
+      0,
+      77,
+      1,
+      "HYVID15VAE"
+    ],
+    [
+      220,
+      70,
+      1,
+      42,
+      1,
+      "HYVID15TRANSFORMERCONFIG"
+    ],
+    [
+      229,
+      42,
+      0,
+      77,
+      0,
+      "HYVID15CFG"
+    ],
+    [
+      230,
+      42,
+      0,
+      46,
+      2,
+      "HYVID15CFG"
+    ],
+    [
+      231,
+      42,
+      0,
+      67,
+      2,
+      "HYVID15CFG"
+    ],
+    [
+      232,
+      42,
+      0,
+      60,
+      0,
+      "HYVID15CFG"
+    ],
+    [
+      234,
+      42,
+      0,
+      79,
+      2,
+      "HYVID15CFG"
+    ],
+    [
+      235,
+      42,
+      0,
+      64,
+      1,
+      "HYVID15CFG"
+    ],
+    [
+      246,
+      48,
+      0,
+      60,
+      5,
+      "HYVID15EXTRAKWARGS"
+    ],
+    [
+      247,
+      49,
+      0,
+      60,
+      3,
+      "HYVIDEMBEDS"
+    ],
+    [
+      248,
+      84,
+      0,
+      43,
+      3,
+      "IMAGE"
+    ],
+    [
+      249,
+      84,
+      0,
+      42,
+      2,
+      "IMAGE"
+    ],
+    [
+      250,
+      84,
+      0,
+      77,
+      3,
+      "IMAGE"
+    ],
+    [
+      251,
+      84,
+      0,
+      67,
+      4,
+      "IMAGE"
+    ],
+    [
+      252,
+      84,
+      0,
+      64,
+      3,
+      "IMAGE"
+    ],
+    [
+      253,
+      84,
+      0,
+      51,
+      3,
+      "IMAGE"
+    ],
+    [
+      255,
+      84,
+      0,
+      50,
+      3,
+      "IMAGE"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "模型加载",
+      "bounding": [
+        -1296.5465087890625,
+        -36.09629821777344,
+        928.8696899414062,
+        526.3731689453125
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "参数准备",
+      "bounding": [
+        -339.4078063964844,
+        -81.28311920166016,
+        831.9130249023438,
+        613.710205078125
+      ],
+      "color": "#A88",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "视频生成",
+      "bounding": [
+        547.538818359375,
+        -113.03947448730469,
+        794.5728149414062,
+        642.0199584960938
+      ],
+      "color": "#8A8",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 5,
+      "title": "输出",
+      "bounding": [
+        1089.23486328125,
+        596.00927734375,
+        384.2930908203125,
+        906.1813354492188
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 6,
+      "title": "超分",
+      "bounding": [
+        -638.6134643554688,
+        625.8651123046875,
+        1590.734619140625,
+        718.339599609375
+      ],
+      "color": "#a1309b",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.7513148009015781,
+      "offset": [
+        794.821563470198,
+        4.148728117118353
+      ]
+    },
+    "frontendVersion": "1.20.7"
+  },
+  "version": 0.4
+}
