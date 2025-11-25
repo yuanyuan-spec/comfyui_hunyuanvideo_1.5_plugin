@@ -158,8 +158,8 @@
         7,
         10,
         1,
-        5,
-        1317562501,
+        121,
+        2127357294,
         "randomize",
         "i2v"
       ]
@@ -349,7 +349,7 @@
         "Node name for S&R": "HyVideo15GlyphByT5"
       },
       "widgets_values": [
-        true
+        false
       ]
     },
     {
@@ -405,7 +405,7 @@
         "Node name for S&R": "HyVideo15TextEncode"
       },
       "widgets_values": [
-        true,
+        false,
         0
       ]
     },
@@ -462,7 +462,7 @@
       },
       "widgets_values": [
         "bfloat16",
-        true,
+        false,
         1152,
         1152
       ]
@@ -551,7 +551,7 @@
         126
       ],
       "flags": {},
-      "order": 2,
+      "order": 0,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -577,7 +577,7 @@
       },
       "widgets_values": [
         "None",
-        "offload_device",
+        "main_device",
         256
       ]
     },
@@ -593,7 +593,7 @@
         82
       ],
       "flags": {},
-      "order": 4,
+      "order": 1,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -631,7 +631,7 @@
         126
       ],
       "flags": {},
-      "order": 3,
+      "order": 2,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -658,7 +658,7 @@
       "widgets_values": [
         "None",
         "llm",
-        "offload_device"
+        "main_device"
       ]
     },
     {
@@ -673,7 +673,7 @@
         130
       ],
       "flags": {},
-      "order": 1,
+      "order": 3,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -694,7 +694,7 @@
       "widgets_values": [
         "None",
         "siglip",
-        "offload_device",
+        "main_device",
         "token"
       ]
     },
@@ -710,7 +710,7 @@
         198
       ],
       "flags": {},
-      "order": 0,
+      "order": 4,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -746,8 +746,8 @@
       "id": 60,
       "type": "HyVideoSrTransformer",
       "pos": [
-        279.1920166015625,
-        718.123291015625
+        351.73150634765625,
+        739.4193115234375
       ],
       "size": [
         310.783203125,
@@ -829,8 +829,8 @@
       "id": 64,
       "type": "HyVideo15VisionEncode",
       "pos": [
-        302.3215026855469,
-        1118.83837890625
+        374.86102294921875,
+        1140.1343994140625
       ],
       "size": [
         321.41796875,
@@ -878,7 +878,7 @@
       },
       "widgets_values": [
         "bfloat16",
-        true,
+        false,
         1151,
         1152
       ]
@@ -887,8 +887,8 @@
       "id": 67,
       "type": "HyVideoSrVaeEncode",
       "pos": [
-        -130.45787048339844,
-        974.7711791992188
+        -57.91836166381836,
+        996.0673828125
       ],
       "size": [
         288.5171813964844,
@@ -964,8 +964,8 @@
       "id": 70,
       "type": "HyVidelSrTransformerUpsamplerLoader",
       "pos": [
-        -612.3428344726562,
-        716.2577514648438
+        -539.8033447265625,
+        737.5537719726562
       ],
       "size": [
         348.8853454589844,
@@ -1015,8 +1015,8 @@
       "id": 77,
       "type": "HyVideoSrLatentsPrepare",
       "pos": [
-        -136.79812622070312,
-        751.180908203125
+        -76.90309143066406,
+        761.8289184570312
       ],
       "size": [
         314.4458923339844,
@@ -1095,8 +1095,8 @@
       "id": 79,
       "type": "HyVidelSrVaeDecoder",
       "pos": [
-        643.3139038085938,
-        728.5668334960938
+        715.8533325195312,
+        749.8628540039062
       ],
       "size": [
         270,
@@ -1725,8 +1725,8 @@
       "id": 6,
       "title": "超分",
       "bounding": [
-        -638.6134643554688,
-        625.8651123046875,
+        -566.0740356445312,
+        647.1611328125,
         1590.734619140625,
         718.339599609375
       ],
@@ -1740,8 +1740,8 @@
     "ds": {
       "scale": 0.7513148009015781,
       "offset": [
-        1097.6240634701983,
-        -259.38927188288153
+        1351.845063470199,
+        136.58322811711787
       ]
     },
     "frontendVersion": "1.20.7"
