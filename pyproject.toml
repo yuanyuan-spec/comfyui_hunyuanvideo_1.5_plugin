@@ -29,7 +29,7 @@ Documentation = "https://github.com/yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugi
 "Bug Tracker" = "https://github.com/yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugin/issues"
 
 [tool.comfy]
-PublisherId = ""
+PublisherId = "yuanyuan-spec-comfyui"
 DisplayName = "comfyui_hunyuanvideo_1.5_plugin"
 Icon = ""
 includes = [] 
