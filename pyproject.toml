@@ -1,5 +1,5 @@
 [project]
-name = "hunyuanvideo_1.5_plugin"
+name = "HunyuanVideo-1.5 nodes"
 description = "A ComfyUI plugin based on HunyuanVideo-1.5, offering both simplified and complete node sets for quick usage or deep workflow customization."
 version = "1.0.0"
 license = {file = "LICENSE"} 
@@ -30,7 +30,7 @@ Documentation = "https://github.com/yuanyuan-spec/comfyui_hunyuanvideo_1.5_plugi
 
 [tool.comfy]
 PublisherId = "yuanyuan-spec-comfyui"
-DisplayName = "comfyui_hunyuanvideo_1.5_plugin"
+DisplayName = "HunyuanVideo-1.5 nodes"
 Icon = ""
 includes = [] 
 # "requires-comfyui" = ">=1.0.0"  # ComfyUI version compatibility
