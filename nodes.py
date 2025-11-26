@@ -163,7 +163,8 @@ class HyVideo15T2VSampler:
         
         if create_sr_pipeline:
             sr_version = TRANSFORMER_VERSION_TO_SR_VERSION[hunyuanvideo_model_config["transformer_version"]]
-            sr_pipeline = pipeline.create_sr_pipeline(os.path.join(hunyuanvideo_model_config["model_path"], "upscale_models", "hyvideo15"), sr_version, transformer_dtype=dtype_options[hunyuanvideo_model_config["transformer_dtype"]], device=device)
+            sr_pipeline = pipeline.create_sr_pipeline(os.path.join(hunyuanvideo_model_config["model_path"], "diffusion_models", "hyvideo15"),
+                                                      os.path.join(hunyuanvideo_model_config["model_path"], "upscale_models", "hyvideo15"), sr_version, transformer_dtype=dtype_options[hunyuanvideo_model_config["transformer_dtype"]], device=device)
             pipeline.sr_pipeline = sr_pipeline
             
         os.environ['T2V_REWRITE_BASE_URL'] = prompt_rewrite_base_url
@@ -288,7 +289,8 @@ class HyVideo15I2VSampler:
         
         if create_sr_pipeline:
             sr_version = TRANSFORMER_VERSION_TO_SR_VERSION[hunyuanvideo_model_config["transformer_version"]]
-            sr_pipeline = pipeline.create_sr_pipeline(os.path.join(hunyuanvideo_model_config["model_path"], "upscale_models", "hyvideo15"), sr_version, transformer_dtype=dtype_options[hunyuanvideo_model_config["transformer_dtype"]], device=device)
+            sr_pipeline = pipeline.create_sr_pipeline(os.path.join(hunyuanvideo_model_config["model_path"], "diffusion_models", "hyvideo15"),
+                                                      os.path.join(hunyuanvideo_model_config["model_path"], "upscale_models", "hyvideo15"), sr_version, transformer_dtype=dtype_options[hunyuanvideo_model_config["transformer_dtype"]], device=device)
             pipeline.sr_pipeline = sr_pipeline
         
         pil_image  = tensor_to_pil(reference_image)

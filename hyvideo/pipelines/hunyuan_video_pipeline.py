@@ -1312,17 +1312,17 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
         return self.transformer.config.use_meanflow
 
     @classmethod
-    def load_sr_transformer_upsampler(cls, cached_folder, sr_version, transformer_dtype=torch.bfloat16, device=None):
-        transformer = HunyuanVideo_1_5_DiffusionTransformer.from_pretrained(os.path.join(cached_folder,  sr_version), torch_dtype=transformer_dtype).to(device)
+    def load_sr_transformer_upsampler(cls, transformer_path,upsampler_path, sr_version, transformer_dtype=torch.bfloat16, device=None):
+        transformer = HunyuanVideo_1_5_DiffusionTransformer.from_pretrained(os.path.join(transformer_path,  sr_version), torch_dtype=transformer_dtype).to(device)
         upsampler_cls = SRTo720pUpsampler if "720p" in sr_version else SRTo1080pUpsampler
-        upsampler = upsampler_cls.from_pretrained(os.path.join(cached_folder, "upsampler", sr_version)).to(device)
+        upsampler = upsampler_cls.from_pretrained(os.path.join(upsampler_path,  sr_version)).to(device)
         return transformer, upsampler
 
-    def create_sr_pipeline(self, cached_folder, sr_version, transformer_dtype=torch.bfloat16, device=None):
+    def create_sr_pipeline(self, transformer_path,upsampler_path, sr_version, transformer_dtype=torch.bfloat16, device=None):
         from .hunyuan_video_sr_pipeline import HunyuanVideo_1_5_SR_Pipeline
 
 
-        transformer, upsampler = self.load_sr_transformer_upsampler(cached_folder, sr_version, transformer_dtype=transformer_dtype, device=device)
+        transformer, upsampler = self.load_sr_transformer_upsampler(transformer_path,upsampler_path, sr_version, transformer_dtype=transformer_dtype, device=device)
 
         return HunyuanVideo_1_5_SR_Pipeline(
             vae=self.vae,
