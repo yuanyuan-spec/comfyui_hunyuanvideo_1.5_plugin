@@ -1,32 +1,37 @@
-# ComfyUI HunyuanVideo-1.5 Plugin
+# ComfyUI HunyuanVideo-1.5 插件
 
-A ComfyUI plugin based on **HunyuanVideo-1.5**, offering both simplified and complete node sets for quick usage or deep workflow customization.
-
----
-
-## ✨ Features
-
-- **Simplified Nodes**: Includes only the core `HyVideo15ModelLoader` and `HyVideo15I2VSampler` nodes, ideal for quick testing and result preview.
-- **Complete Nodes**: Provides more finely split nodes for detailed workflow adjustments and replacements.
-- **Auto-Download Models**: Built-in automatic model download; no need to manually prepare model files (manual download also supported).
+基于 **HunyuanVideo-1.5** 的 ComfyUI 插件，提供简化版和完整版节点集，方便快速上手或深度定制工作流程。
 
 ---
 
-## 📦 Installation
+## ✨ 功能特性
 
-### Step 1: Install Dependencies
-1. Install required libraries from `requirements.txt`:  `pip install -r requirements.txt`
-2. Flash Attention: It's recommended to install Flash Attention for faster inference and reduced GPU memory consumption. Detailed installation instructions are available at Flash Attention.
-### Step 2: Download Models
-Choose one of the following methods to download the model files (including `hunyuanvideo-1.5` model, `text_encoder`, and `vision_encoder`):
+- **简化版节点**：仅包含核心的 `HyVideo15ModelLoader` 和 `HyVideo15I2VSampler` 节点，非常适合快速测试和结果预览。
+- **完整版节点**：提供更精细的节点划分，方便进行更细致的工作流程调整和替换。
+- **自动下载模型**：内置自动模型下载功能；无需手动准备模型文件（也支持手动下载）。
 
-#### Method 1: Auto-Download (Recommended)
-Enable the **Auto-Download** option in the plugin when running a workflow. **Models will be automatically downloaded to the default path.When using the model's auto-download feature, please set the path of the model loading node to "None.**" The corresponding model will be automatically downloaded to the default directory (if it already exists, it will not be downloaded again). The next time you run the workflow, you can see the auto-downloaded model in the node's path options.
+---
 
-#### Method 2: Manual Download
-Manually download the model file and place it in the model directory specified by the plugin. For detailed instructions, please refer to [checkpoints-download.md](checkpoints-download.md). (From the HunyuanVideo-1.5 open source project).
+## 📦 安装
 
-**The directory structure for model placement is as follows:**
+### 步骤 1：安装依赖项
+
+1. 安装 `requirements.txt` 中列出的所需库：`pip install -r requirements.txt`
+2. Flash Attention：建议安装 Flash Attention 以加快推理速度并降低 GPU 内存消耗。详细的安装说明请参见 Flash Attention。
+
+### 步骤 2：下载模型
+
+选择以下方法之一下载模型文件（包括 `hunyuanvideo-1.5` 模型、`text_encoder` 和 `vision_encoder`）：
+
+#### 方法 1：自动下载（推荐）
+
+如果您希望自动下载模型，请将模型加载节点的路径设置为“None”。相应的模型将自动下载到默认目录（如果已存在，则不会重复下载）。下次运行工作流时，您可以在节点的路径选项中看到自动下载的模型。
+
+#### 方法 2：手动下载
+
+手动下载模型文件并将其放置在插件指定的模型目录中。详细说明请参见 [checkpoints-download.md](checkpoints-download.md)。（来自 HunyuanVideo-1.5 开源项目）。
+
+**模型放置的目录结构如下：**
 
 ```
 
@@ -133,45 +138,47 @@ models/
         
 ```
 
-### Step 3: Import Workflow
-1. Import the provided example workflow file (e.g., `simplified_I2V_workflow.json`) into ComfyUI.
-2. Adjust necessary parameters, such as selecting the model path and loading the image.
-3. Tweak parameters or replace nodes as needed (the complete node set allows for more flexible adjustments).
+### 步骤 3：导入工作流程
+
+1. 将提供的示例工作流程文件（例如 `simplified_I2V_workflow.json`）导入 ComfyUI。
+2. 调整必要的参数，例如选择模型路径和加载图像。
+3. 根据需要调整参数或替换节点（完整节点集允许更灵活的调整）。
 
 ---
 
-## 🧩 Node Description
+## 🧩 节点说明
 
-### Simplified Nodes
-- `HyVideo15ModelLoader`: Loads the HunyuanVideo-1.5 model.
-- `HyVideo15I2VSampler`: Performs the video generation inference.
+### 简化节点
 
-### Complete Nodes
-In addition to the simplified functionality, the complete set includes the following split nodes:
-- `HyVideoTextEncode`: Text encoder.
-- `HyVideoVisionEncode`: Image encoder.
-- Refer to the example workflows for more details.
+- `HyVideo15ModelLoader`：加载混元视频-1.5 模型。
+- `HyVideo15I2VSampler`：执行视频生成推理。
 
----
+### 完整节点
 
-## 🛠 Usage Tips
+除了简化功能外，完整节点集还包含以下拆分节点：
 
-- Start with the **Simplified Workflow** for initial use to quickly verify results.
-- Switch to the **Complete Nodes** for flexible assembly if you need to customize generation logic (e.g., replace encoders, adjust frame sequences).
-- Ensure a stable internet connection for auto-download. If download fails, check the path or manually download the models.
+- `HyVideoTextEncode`：文本编码器。
+- `HyVideoVisionEncode`：图像编码器。
+- 更多详情请参考示例工作流程。
 
 ---
 
-## ❓ FAQ
+## 🛠 使用技巧
 
-**Q: What should I do if auto-download fails?**  
-A: Check your network connection, or manually download the models and place them in the corresponding subdirectories under `models/`.
-
-**Q: How do I switch between Simplified and Complete versions?**  
-A: Import the corresponding workflow file (e.g., `simplified_I2V_workflow.json` or `complete_I2V_workflow.json`) into ComfyUI. The nodes are grouped by version.
+- 初次使用时，建议先使用**简化工作流程**，以便快速验证结果。
+- 如果需要自定义生成逻辑（例如，替换编码器、调整帧序列），请切换到**完整节点**，以便进行更灵活的组装。
+- 确保网络连接稳定，以便自动下载。如果下载失败，请检查路径或手动下载模型。
 
 ---
 
-## 📄 License
+## ❓ 常见问题
 
-This is an plugin based on the HunyuanVideo-1.5 model. Please comply with the relevant license agreement of the original model.
+**问：如果自动下载失败该怎么办？** 答：检查您的网络连接，或手动下载模型并将其放置在 `models/` 目录下的相应子目录中。
+
+**问：如何在简化版和完整版之间切换？** 答：将相应的工作流程文件（例如，`simplified_I2V_workflow.json` 或 `complete_I2V_workflow.json`）导入 ComfyUI。节点按版本分组。
+
+---
+
+## 📄 许可协议
+
+本插件基于混元视频-1.5 模型。请遵守原模型的相关许可协议。
