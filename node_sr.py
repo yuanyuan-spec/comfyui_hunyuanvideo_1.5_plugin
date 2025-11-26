@@ -34,7 +34,7 @@ from node_adv import tensor_to_pil
 import folder_paths
 
 from node_adv import HunyuanVideoPipelineOutput
-
+import shutil
 
 
 from hyvideo.commons import (
@@ -528,24 +528,29 @@ class HyVidelSrTransformerUpsamplerLoader:
             "int32": torch.int32,
             "int64": torch.int64,
         }
+        transformer_version = f"{resolution}_{task_type}"
+        
+        sr_version = TRANSFORMER_VERSION_TO_SR_VERSION[transformer_version]
+        
         if upsampler_path == "None":
             upsampler_path = os.path.join(folder_paths.models_dir, "upscale_models", "hyvideo15")
             if not os.path.exists(upsampler_path):
                 tmp_path = folder_paths.get_temp_directory()
                 ret = run_cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"upsampler/*\" --local-dir {tmp_path}")
                 loguru.logger.info(ret)
-                run_cmd(f"mv {tmp_path}/upsampler {upsampler_path}")
+                shutil.move(os.path.join(tmp_path, "upsampler"), upsampler_path)
+                # run_cmd(f"mv {tmp_path}/upsampler {upsampler_path}")
 
         if transformer_path == "None":
             transformer_path = os.path.join(folder_paths.models_dir, "diffusion_models", "hyvideo15")
-            if not os.path.exists(transformer_path):
+            if not os.path.exists(os.path.join(transformer_path,sr_version)):
+                os.makedirs(transformer_path, exist_ok=True)
                 tmp_path = folder_paths.get_temp_directory()
-                run_cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"transformer/*\" --local-dir {tmp_path}")
-                run_cmd(f"mv {tmp_path}/transformer {transformer_path}")
+                run_cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"transformer/{sr_version}/*\" --local-dir {tmp_path}")
+                shutil.move(os.path.join(tmp_path, "transformer",sr_version), transformer_path)
+                # run_cmd(f"mv {tmp_path}/transformer {transformer_path}")
 
-        transformer_version = f"{resolution}_{task_type}"
-        sr_version = TRANSFORMER_VERSION_TO_SR_VERSION[transformer_version]
-        transformer = HunyuanVideo_1_5_DiffusionTransformer.from_pretrained(os.path.join(transformer_path,  sr_version), torch_dtype=dtype_options[transformer_dtype]).to(device)
+        transformer = HunyuanVideo_1_5_DiffusionTransformer.from_pretrained(os.path.join(transformer_path,sr_version), torch_dtype=dtype_options[transformer_dtype]).to(device)
         upsampler_cls = SRTo720pUpsampler if "720p" in sr_version else SRTo1080pUpsampler
         upsampler = upsampler_cls.from_pretrained(os.path.join(upsampler_path,  sr_version)).to(device)
         return (transformer, transformer.config,upsampler,)

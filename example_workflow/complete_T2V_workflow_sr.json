@@ -46,7 +46,7 @@
         "Node name for S&R": "CreateVideo"
       },
       "widgets_values": [
-        30
+        24
       ]
     },
     {
@@ -159,7 +159,7 @@
         10,
         1,
         121,
-        1991977539,
+        1885608265,
         "randomize",
         "i2v"
       ]
@@ -548,10 +548,10 @@
       ],
       "size": [
         270,
-        126
+        150
       ],
       "flags": {},
-      "order": 0,
+      "order": 1,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -577,6 +577,7 @@
       },
       "widgets_values": [
         "None",
+        "None",
         "main_device",
         256
       ]
@@ -593,7 +594,7 @@
         82
       ],
       "flags": {},
-      "order": 1,
+      "order": 0,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -631,7 +632,7 @@
         126
       ],
       "flags": {},
-      "order": 2,
+      "order": 3,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -657,7 +658,7 @@
       },
       "widgets_values": [
         "None",
-        "llm",
+        "None",
         "main_device"
       ]
     },
@@ -673,7 +674,7 @@
         130
       ],
       "flags": {},
-      "order": 3,
+      "order": 2,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -693,7 +694,7 @@
       },
       "widgets_values": [
         "None",
-        "siglip",
+        "None",
         "main_device",
         "token"
       ]
@@ -1007,7 +1008,7 @@
         "None",
         "None",
         "720p",
-        "t2v",
+        "i2v",
         "bfloat16"
       ]
     },
@@ -1738,10 +1739,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.683013455365071,
+      "scale": 0.7513148009015781,
       "offset": [
-        1329.4842634701997,
-        184.69887811711786
+        1255.3475634701995,
+        68.70222811711818
       ]
     },
     "frontendVersion": "1.20.7"

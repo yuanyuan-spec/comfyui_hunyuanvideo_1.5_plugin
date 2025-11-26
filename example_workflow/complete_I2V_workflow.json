@@ -46,7 +46,7 @@
         "Node name for S&R": "CreateVideo"
       },
       "widgets_values": [
-        30
+        24
       ]
     },
     {
@@ -159,7 +159,7 @@
         10,
         1,
         121,
-        1294840909,
+        1924382079,
         "randomize",
         "i2v"
       ]
@@ -548,7 +548,7 @@
       ],
       "size": [
         270,
-        126
+        150
       ],
       "flags": {},
       "order": 3,
@@ -576,6 +576,7 @@
         "Node name for S&R": "HyVideo15Byt5Loader"
       },
       "widgets_values": [
+        "None",
         "None",
         "main_device",
         256
@@ -657,7 +658,7 @@
       },
       "widgets_values": [
         "None",
-        "llm",
+        "None",
         "main_device"
       ]
     },
@@ -693,7 +694,7 @@
       },
       "widgets_values": [
         "None",
-        "siglip",
+        "None",
         "main_device",
         "token"
       ]
@@ -1841,8 +1842,8 @@
     "ds": {
       "scale": 0.7513148009015781,
       "offset": [
-        1283.9640634701996,
-        223.09822811711783
+        1033.736063470199,
+        171.85472811711813
       ]
     },
     "frontendVersion": "1.20.7"

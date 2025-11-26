@@ -65,7 +65,7 @@ from pathlib import Path
 from typing import List
 
 
-
+import shutil
 
 target_size_config = {
     "360p": {"bucket_hw_base_size": 480, "bucket_hw_bucket_stride": 16},
@@ -216,10 +216,12 @@ class HyVideoTransformerLoader:
         transformer_version = f"{resolution}_{task_type}"
         if path == "None":
             path = os.path.join(folder_paths.models_dir, "diffusion_models", "hyvideo15")
-            if not os.path.exists(path):
+            if not os.path.exists(os.path.join(path,transformer_version)):
+                os.makedirs(path, exist_ok=True)
                 tmp_path = folder_paths.get_temp_directory()
-                run_cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"transformer/*\" --local-dir {tmp_path}")
-                run_cmd(f"mv {tmp_path}/transformer {path}")
+                run_cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"transformer/{transformer_version}/*\" --local-dir {tmp_path}")
+                shutil.move(os.path.join(tmp_path, "transformer",transformer_version), path)
+                # run_cmd(f"mv {tmp_path}/transformer {path}")
 
         transformer = HunyuanVideo_1_5_DiffusionTransformer.from_pretrained(os.path.join(path, transformer_version), torch_dtype=dtype_options[transformer_dtype]).to(device)
         transformer.set_attn_mode(attn_mode)
@@ -249,7 +251,8 @@ class HyVideoVaeLoader:
             if not os.path.exists(path):
                 tmp_path = folder_paths.get_temp_directory()
                 run_cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"vae/*\" --local-dir {tmp_path}")
-                run_cmd(f"mv {tmp_path}/vae {path}")
+                shutil.move(os.path.join(tmp_path, "vae"), path)
+                # run_cmd(f"mv {tmp_path}/vae {path}")
 
         vae = hunyuanvideo_15_vae.AutoencoderKLConv3D.from_pretrained(
             path,
@@ -279,7 +282,7 @@ class HyTextEncoderLoader:
         return {
             "required": {
                 "path": (get_immediate_subdirectories(get_model_dir_path("text_encoders")),),
-                "text_encoder_type": (["qwen-2.5vl-7b", "llm"], {"default": "llm"}),
+                "text_encoder_type": (["llm","None"], {"default": "llm"}),
                 "load_device": (["main_device", "offload_device"], {"default": "main_device"}),
             },
             "optional": {
@@ -294,15 +297,23 @@ class HyTextEncoderLoader:
     def loadmodel(self, path, text_encoder_type, load_device):
         device = mm.get_torch_device() if load_device == "main_device" else mm.unet_offload_device()
         if path == "None":
+            text_encoder_type = "llm"
             path = os.path.join(folder_paths.models_dir, "text_encoders", "hyvideo15")
             if not os.path.exists(path):
                 os.makedirs(path, exist_ok=True)
                 run_cmd(f"hf download Qwen/Qwen2.5-VL-7B-Instruct --local-dir {path}/{text_encoder_type}")
+            text_encoder_path=os.path.join(path, text_encoder_type)
+        else:
+            if text_encoder_type == "None":
+                text_encoder_path = path
+            else:
+                text_encoder_path = text_encoder_path=os.path.join(path, text_encoder_type)
+            
 
         text_encoder = TextEncoder(
-            text_encoder_type=text_encoder_type,
-            tokenizer_type=text_encoder_type,
-            text_encoder_path=os.path.join(path, text_encoder_type),
+            text_encoder_type="llm",
+            tokenizer_type="llm",
+            text_encoder_path=text_encoder_path,
             max_length=1000,
             text_encoder_precision="fp16",
             prompt_template=PROMPT_TEMPLATE['li-dit-encode-image-json'],
@@ -324,7 +335,7 @@ class HyVideoVisionEncoderLoader:
         return {
             "required": {
                 "path": (get_immediate_subdirectories(get_model_dir_path("clip_vision")),),
-                "vision_encoder_type": (["siglip",], {"default": "siglip"}),
+                "vision_encoder_type": (["siglip","None"], {"default": "siglip"}),
                 "load_device": (["main_device", "offload_device"], {"default": "main_device"}),
             },
             "optional": {
@@ -340,15 +351,22 @@ class HyVideoVisionEncoderLoader:
     def loadmodel(self, path, vision_encoder_type, load_device, hf_token):
         device = mm.get_torch_device() if load_device == "main_device" else mm.unet_offload_device()
         if path == "None":
+            vision_encoder_type = "siglip" # 只能自动下载这一类
             path = os.path.join(folder_paths.models_dir, "clip_vision", "hyvideo15")
             if not os.path.exists(path):
                 os.makedirs(path, exist_ok=True)
                 run_cmd(f"hf download black-forest-labs/FLUX.1-Redux-dev --local-dir {path}/{vision_encoder_type} --token {hf_token}")
-
+            vision_encoder_path = os.path.join(path, vision_encoder_type)
+        else:
+            if vision_encoder_type == "None":
+                vision_encoder_path = path
+            else:
+                vision_encoder_path = os.path.join(path, vision_encoder_type)
+            
         vision_encoder = VisionEncoder(
-            vision_encoder_type=vision_encoder_type,
+            vision_encoder_type="siglip", # 这个输入给算法必须是固定值
             vision_encoder_precision='fp16',
-            vision_encoder_path=os.path.join(path, vision_encoder_type),
+            vision_encoder_path=vision_encoder_path,
             processor_type=None,
             processor_path=None,
             output_key=None,
@@ -362,7 +380,8 @@ class HyVideoByt5Loader:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "path": ([get_model_dir_path("text_encoders"), "None"],),
+                "byt5_path": (get_immediate_subdirectories(get_model_dir_path("text_encoders")),),
+                "glyph_path": (get_immediate_subdirectories(get_model_dir_path("text_encoders")),),
                 "load_device": (["main_device", "offload_device"], {"default": "main_device"}),
             },
             "optional": {
@@ -375,29 +394,31 @@ class HyVideoByt5Loader:
     FUNCTION = "loadmodel"
     CATEGORY = "HunyuanVideoWrapper1.5"
 
-    def loadmodel(self, path, load_device, byt5_max_length):
+    def loadmodel(self, load_device, byt5_max_length,byt5_path,glyph_path):
         device = mm.get_torch_device() if load_device == "main_device" else mm.unet_offload_device()
-        if path == "None":
+        if byt5_path == "None":
             path = os.path.join(folder_paths.models_dir, "text_encoders")
             byt5_path = os.path.join(path, "byt5-small")
-            glyph_path = os.path.join(path, "Glyph-SDXL-v2")
             if not os.path.exists(byt5_path):
                 run_cmd(f"hf download google/byt5-small --local-dir {path}/byt5-small")
+                
+        if glyph_path == "None":
+            path = os.path.join(folder_paths.models_dir, "text_encoders")
+            glyph_path = os.path.join(path, "Glyph-SDXL-v2")
             if not os.path.exists(glyph_path):
                 run_cmd(f"modelscope download --model AI-ModelScope/Glyph-SDXL-v2 --local_dir {path}/Glyph-SDXL-v2")
 
-        byt5_kwargs, prompt_format = self._load_byt5(path, True, byt5_max_length, device=device)
+        byt5_kwargs, prompt_format = self._load_byt5(byt5_path,glyph_path, True, byt5_max_length, device=device,)
 
         return (byt5_kwargs, prompt_format)
 
-    def _load_byt5(self, cached_folder, glyph_byT5_v2, byt5_max_length, device):
+    def _load_byt5(self, byt5_path,glyph_path, glyph_byT5_v2, byt5_max_length, device):
         if not glyph_byT5_v2:
             byt5_kwargs = None
             prompt_format = None
             return byt5_kwargs, prompt_format
         try:
-            load_from = cached_folder
-            glyph_root = os.path.join(load_from, "Glyph-SDXL-v2")
+            glyph_root = glyph_path
             if not os.path.exists(glyph_root):
                 raise RuntimeError(
                     f"Glyph checkpoint not found from '{glyph_root}'. \n"
@@ -411,7 +432,7 @@ class HyVideoByt5Loader:
                     "        └── byt5_model.pt\n"
                 )
 
-            byT5_google_path = os.path.join(load_from, "byt5-small")
+            byT5_google_path = byt5_path
             if not os.path.exists(byT5_google_path):
                 loguru.logger.warning(f"ByT5 google path not found from: {byT5_google_path}. Try downloading from https://huggingface.co/google/byt5-small.")
                 byT5_google_path = "google/byt5-small"
