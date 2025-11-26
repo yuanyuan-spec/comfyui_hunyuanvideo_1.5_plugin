@@ -1,3 +1,4 @@
+[中文文档](./README_CN.md)
 # ComfyUI HunyuanVideo-1.5 Plugin
 
 A ComfyUI plugin based on **HunyuanVideo-1.5**, offering both simplified and complete node sets for quick usage or deep workflow customization.

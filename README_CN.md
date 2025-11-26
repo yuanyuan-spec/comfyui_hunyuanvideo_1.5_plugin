@@ -1,3 +1,4 @@
+[Read in English](./README.md)
 # ComfyUI HunyuanVideo-1.5 插件
 
 基于 **HunyuanVideo-1.5** 的 ComfyUI 插件，提供简化版和完整版节点集，方便快速上手或深度定制工作流程。
