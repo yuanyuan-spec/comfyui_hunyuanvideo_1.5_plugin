@@ -53,6 +53,9 @@ from hyvideo import __initialize_default_distributed_environment
 
 from hyvideo.commons import TRANSFORMER_VERSION_TO_SR_VERSION
 
+import shutil
+
+
 __initialize_default_distributed_environment()
 
 
@@ -464,19 +467,20 @@ class HyVideo15ModelLoader:
         if not os.path.exists(path):
             tmp_path = folder_paths.get_temp_directory()
             self._cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"upsampler/*\" --local-dir {tmp_path}")
-            self._cmd(f"mv {tmp_path}/upsampler {path}")
+            shutil.move(os.path.join(tmp_path, "upsampler"), path)
 
         path = os.path.join(folder_paths.models_dir, "diffusion_models", "hyvideo15")
         if not os.path.exists(path):
             tmp_path = folder_paths.get_temp_directory()
             self._cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"transformer/*\" --local-dir {tmp_path}")
-            self._cmd(f"mv {tmp_path}/transformer {path}")
+            shutil.move(os.path.join(tmp_path, "transformer"), path)
         
         path = os.path.join(folder_paths.models_dir, "vae", "hyvideo15")
         if not os.path.exists(path):
             tmp_path = folder_paths.get_temp_directory()
             self._cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"vae/*\" --local-dir {tmp_path}")
-            self._cmd(f"mv {tmp_path}/vae {path}")
+            shutil.move(os.path.join(tmp_path, "vae"), path)
+            
 
         path = os.path.join(folder_paths.models_dir, "text_encoders", "hyvideo15", "llm")
         if not os.path.exists(path):

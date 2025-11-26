@@ -1,7 +1,7 @@
 [project]
 name = "HunyuanVideo-1.5 nodes"
 description = "A ComfyUI plugin based on HunyuanVideo-1.5, offering both simplified and complete node sets for quick usage or deep workflow customization."
-version = "1.0.0"
+version = "1.0.1"
 license = {file = "LICENSE"} 
 # classifiers = [
 #     # For OS-independent nodes (works on all operating systems)
