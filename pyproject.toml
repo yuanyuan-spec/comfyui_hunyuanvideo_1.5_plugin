@@ -1,5 +1,5 @@
 [project]
-name = "HunyuanVideo-1.5 nodes"
+name = "hunyuanvideo_1.5_plugin"
 description = "A ComfyUI plugin based on HunyuanVideo-1.5, offering both simplified and complete node sets for quick usage or deep workflow customization."
 version = "1.0.1"
 license = {file = "LICENSE"} 
