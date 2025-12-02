@@ -769,8 +769,8 @@ class AutoencoderKLConv3D(ModelMixin, ConfigMixin):
         return dec
 
     def spatial_tiled_decode(self, z: torch.Tensor):
-        if self._tile_parallelism_enabled:
-            return self.tile_parallel_spatial_tiled_decode(z)
+        # if self._tile_parallelism_enabled:
+        #     return self.tile_parallel_spatial_tiled_decode(z)
 
         B, C, T, H, W = z.shape
         overlap_size = int(self.tile_latent_min_size * (1 - self.tile_overlap_factor))

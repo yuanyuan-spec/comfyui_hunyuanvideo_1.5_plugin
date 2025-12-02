@@ -177,6 +177,7 @@ class HunyuanVideo_1_5_SR_Pipeline(HunyuanVideo_1_5_Pipeline):
         lq_latents=None,
         output_type: Optional[str] = "pt",
         return_dict: bool = True,
+        enable_vae_tile_parallelism: bool = True,
         **kwargs,
     ):
         r"""
@@ -237,7 +238,7 @@ class HunyuanVideo_1_5_SR_Pipeline(HunyuanVideo_1_5_Pipeline):
         if get_parallel_state().sp_enabled:
             assert seed is not None
         if generator is None and seed is not None:
-            generator = torch.Generator(device=self.execution_device).manual_seed(seed)
+            generator = torch.Generator(device=torch.device('cpu')).manual_seed(seed)
 
         sr_stride = 16
         base_size = SizeMap[self.config.base_resolution]
@@ -449,7 +450,7 @@ class HunyuanVideo_1_5_SR_Pipeline(HunyuanVideo_1_5_Pipeline):
             else:
                 latents = latents / self.vae.config.scaling_factor
 
-            if hasattr(self.vae, 'enable_tile_parallelism'):
+            if enable_vae_tile_parallelism and hasattr(self.vae, 'enable_tile_parallelism'):
                 self.vae.enable_tile_parallelism()
             with torch.autocast(device_type="cuda", dtype=self.vae_dtype, enabled=self.vae_autocast_enabled), auto_offload_model(self.vae, self.execution_device, enabled=self.enable_offloading):
                 self.vae.enable_tiling()

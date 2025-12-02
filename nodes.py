@@ -18,7 +18,8 @@ current_file_path = os.path.abspath(__file__)
 current_dir = os.path.dirname(current_file_path)
 if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
-
+import argparse
+from hyvideo.commons.infer_state import initialize_infer_state
 
 
 import comfy.utils
@@ -55,6 +56,8 @@ from hyvideo.commons import TRANSFORMER_VERSION_TO_SR_VERSION
 
 import shutil
 
+from node_util import ms_download_model,hf_download_model
+
 
 __initialize_default_distributed_environment()
 
@@ -76,7 +79,6 @@ dtype_options = {
     "int32": torch.int32,
     "int64": torch.int64,
 }
-
 
 
 class HyVideo15T2VSampler:
@@ -107,6 +109,13 @@ class HyVideo15T2VSampler:
             },
             "optional": {
                 "seed": ("INT", {"default": 0}),
+                "enable_cache": ("BOOLEAN", {"default": False, "tooltip": "Enable cache."}),
+                "cache_start_step": ("INT", {"default": 11, "tooltip": "Cache start step."}),
+                "cache_end_step": ("INT", {"default": 45, "tooltip": "Cache end step."}),
+                "no_cache_block_id": ("INT", {"default": 53, "tooltip": "No cache block id."}),
+                "cache_step_interval": ("INT", {"default": 4, "tooltip": "Cache step interval."}),
+                "cache_type": (["deepcache", "teacache", "taylorcache"], {"default": "deepcache", "tooltip": "Cache type."}),
+                "enable_sageattn": ("BOOLEAN", {"default": False, "tooltip": "Enable sageattn."}),
             }
         }
 
@@ -131,8 +140,33 @@ class HyVideo15T2VSampler:
         sr_num_inference_steps = 8,
         prompt_rewrite=False,
         prompt_rewrite_base_url="",
-        prompt_rewrite_model_name=""
+        prompt_rewrite_model_name="",
+        enable_cache=False,
+        cache_start_step=11,
+        cache_end_step=45,
+        no_cache_block_id=53,
+        cache_step_interval=4,
+        cache_type="deepcache",
+        enable_sageattn=False,
     ):
+        
+        # 方法1：使用 argparse.Namespace
+        args = argparse.Namespace(
+            sage_blocks_range="0-53",
+            no_cache_block_id=str(no_cache_block_id), 
+            use_sageattn=enable_sageattn,
+            enable_torch_compile=False,
+            enable_cache=enable_cache,
+            cache_type=cache_type,
+            cache_start_step=cache_start_step,
+            cache_end_step=cache_end_step,
+            total_steps=num_inference_steps,
+            cache_step_interval=cache_step_interval
+        )
+
+        # 调用函数
+        initialize_infer_state(args)
+        
         
         
         byt5_kwargs = hunyuanvideo_model_config["byt5_kwargs"]
@@ -165,9 +199,12 @@ class HyVideo15T2VSampler:
         
         
         if create_sr_pipeline:
-            sr_version = TRANSFORMER_VERSION_TO_SR_VERSION[hunyuanvideo_model_config["transformer_version"]]
-            sr_pipeline = pipeline.create_sr_pipeline(os.path.join(hunyuanvideo_model_config["model_path"], "diffusion_models", "hyvideo15"),
-                                                      os.path.join(hunyuanvideo_model_config["model_path"], "upscale_models", "hyvideo15"), sr_version, transformer_dtype=dtype_options[hunyuanvideo_model_config["transformer_dtype"]], device=device)
+            transformer_version = hunyuanvideo_model_config["transformer_version"]
+            sr_version = TRANSFORMER_VERSION_TO_SR_VERSION[transformer_version]
+            transformer_path = os.path.join(hunyuanvideo_model_config["model_path"], "diffusion_models", "hyvideo15",sr_version)
+            upsampler_path = os.path.join(hunyuanvideo_model_config["model_path"], "upscale_models", "hyvideo15",sr_version)
+            transformer_dtype=dtype_options[hunyuanvideo_model_config["transformer_dtype"]]
+            sr_pipeline = pipeline.create_sr_pipeline(transformer_path, upsampler_path,sr_version, transformer_dtype, device)
             pipeline.sr_pipeline = sr_pipeline
             
         os.environ['T2V_REWRITE_BASE_URL'] = prompt_rewrite_base_url
@@ -238,6 +275,13 @@ class HyVideo15I2VSampler:
             },
             "optional": {
                 "seed": ("INT", {"default": 0}),
+                "enable_cache": ("BOOLEAN", {"default": False, "tooltip": "Enable cache."}),
+                "cache_start_step": ("INT", {"default": 11, "tooltip": "Cache start step."}),
+                "cache_end_step": ("INT", {"default": 45, "tooltip": "Cache end step."}),
+                "no_cache_block_id": ("INT", {"default": 53, "tooltip": "No cache block id."}),
+                "cache_step_interval": ("INT", {"default": 4, "tooltip": "Cache step interval."}),
+                "cache_type": (["deepcache", "teacache", "taylorcache"], {"default": "deepcache", "tooltip": "Cache type."}),
+                "enable_sageattn": ("BOOLEAN", {"default": False, "tooltip": "Enable sageattn."}),
             }
         }
 
@@ -261,7 +305,31 @@ class HyVideo15I2VSampler:
         create_sr_pipeline = True,
         aspect_ratio = "16:9",
         sr_num_inference_steps = 8,
+        enable_cache=False,
+        cache_start_step=11,
+        cache_end_step=45,
+        no_cache_block_id=53,
+        cache_step_interval=4,
+        cache_type="deepcache",
+        enable_sageattn=False,
     ):
+        
+        # 方法1：使用 argparse.Namespace
+        args = argparse.Namespace(
+            sage_blocks_range="0-53",
+            no_cache_block_id=str(no_cache_block_id), 
+            use_sageattn=enable_sageattn,
+            enable_torch_compile=False,
+            enable_cache=enable_cache,
+            cache_type=cache_type,
+            cache_start_step=cache_start_step,
+            cache_end_step=cache_end_step,
+            total_steps=num_inference_steps,
+            cache_step_interval=cache_step_interval
+        )
+
+        # 调用函数
+        initialize_infer_state(args)
         
         byt5_kwargs = hunyuanvideo_model_config["byt5_kwargs"]
 
@@ -291,9 +359,12 @@ class HyVideo15I2VSampler:
         
         
         if create_sr_pipeline:
-            sr_version = TRANSFORMER_VERSION_TO_SR_VERSION[hunyuanvideo_model_config["transformer_version"]]
-            sr_pipeline = pipeline.create_sr_pipeline(os.path.join(hunyuanvideo_model_config["model_path"], "diffusion_models", "hyvideo15"),
-                                                      os.path.join(hunyuanvideo_model_config["model_path"], "upscale_models", "hyvideo15"), sr_version, transformer_dtype=dtype_options[hunyuanvideo_model_config["transformer_dtype"]], device=device)
+            transformer_version = hunyuanvideo_model_config["transformer_version"]
+            sr_version = TRANSFORMER_VERSION_TO_SR_VERSION[transformer_version]
+            transformer_path = os.path.join(hunyuanvideo_model_config["model_path"], "diffusion_models", "hyvideo15",sr_version)
+            upsampler_path = os.path.join(hunyuanvideo_model_config["model_path"], "upscale_models", "hyvideo15",sr_version)
+            transformer_dtype=dtype_options[hunyuanvideo_model_config["transformer_dtype"]]
+            sr_pipeline = pipeline.create_sr_pipeline(transformer_path, upsampler_path,sr_version, transformer_dtype, device)
             pipeline.sr_pipeline = sr_pipeline
         
         pil_image  = tensor_to_pil(reference_image)
@@ -466,39 +537,45 @@ class HyVideo15ModelLoader:
         path = os.path.join(folder_paths.models_dir, "upscale_models", "hyvideo15")
         if not os.path.exists(path):
             tmp_path = folder_paths.get_temp_directory()
-            self._cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"upsampler/*\" --local-dir {tmp_path}")
+            hf_download_model("tencent/HunyuanVideo-1.5","upsampler/*",tmp_path)
             shutil.move(os.path.join(tmp_path, "upsampler"), path)
 
-        path = os.path.join(folder_paths.models_dir, "diffusion_models", "hyvideo15")
-        if not os.path.exists(path):
-            tmp_path = folder_paths.get_temp_directory()
-            self._cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"transformer/*\" --local-dir {tmp_path}")
-            shutil.move(os.path.join(tmp_path, "transformer"), path)
         
         path = os.path.join(folder_paths.models_dir, "vae", "hyvideo15")
         if not os.path.exists(path):
             tmp_path = folder_paths.get_temp_directory()
-            self._cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"vae/*\" --local-dir {tmp_path}")
+            hf_download_model("tencent/HunyuanVideo-1.5","vae/*",tmp_path)
+            
             shutil.move(os.path.join(tmp_path, "vae"), path)
             
 
         path = os.path.join(folder_paths.models_dir, "text_encoders", "hyvideo15", "llm")
         if not os.path.exists(path):
             os.makedirs(path, exist_ok=True)
-            self._cmd(f"hf download Qwen/Qwen2.5-VL-7B-Instruct --local-dir {path}")
+            hf_download_model("Qwen/Qwen2.5-VL-7B-Instruct",None,path)
+            
         
         path = os.path.join(folder_paths.models_dir, "clip_vision", "hyvideo15", "siglip")
         if not os.path.exists(path):
             os.makedirs(path, exist_ok=True)
-            self._cmd(f"hf download black-forest-labs/FLUX.1-Redux-dev --local-dir {path} --token {hf_token}")
+            hf_download_model("black-forest-labs/FLUX.1-Redux-dev",None,path,hf_token)
+            
 
         path = os.path.join(folder_paths.models_dir, "text_encoders")
         byt5_path = os.path.join(path, "byt5-small")
         glyph_path = os.path.join(path, "Glyph-SDXL-v2")
         if not os.path.exists(byt5_path):
-            self._cmd(f"hf download google/byt5-small --local-dir {path}")
+            hf_download_model("google/byt5-small",None,byt5_path)
+            
         if not os.path.exists(glyph_path):
-            self._cmd(f"modelscope download --model AI-ModelScope/Glyph-SDXL-v2 --local_dir {path}")
+            ms_download_model("AI-ModelScope/Glyph-SDXL-v2",glyph_path)
+
+        path = os.path.join(folder_paths.models_dir, "diffusion_models", "hyvideo15")
+        if not os.path.exists(path):
+            tmp_path = folder_paths.get_temp_directory()
+            hf_download_model("tencent/HunyuanVideo-1.5","transformer/*",tmp_path)
+            
+            shutil.move(os.path.join(tmp_path, "transformer"), path)
             
     def load_byt5(self, cached_folder, glyph_byT5_v2, byt5_max_length, device):
         if not glyph_byT5_v2:

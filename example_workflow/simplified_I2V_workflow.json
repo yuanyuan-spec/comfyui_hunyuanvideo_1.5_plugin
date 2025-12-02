@@ -8,8 +8,8 @@
       "id": 1,
       "type": "HyVideo15ModelLoader",
       "pos": [
-        256.9436340332031,
-        1314.75634765625
+        243.44363403320312,
+        1310.75634765625
       ],
       "size": [
         369.4765625,
@@ -34,7 +34,7 @@
         "Node name for S&R": "HyVideo15ModelLoader"
       },
       "widgets_values": [
-        "/deploy/ComfyUI/models",
+        "",
         "flash",
         256,
         "siglip",
@@ -143,7 +143,7 @@
       ],
       "size": [
         400,
-        402
+        570
       ],
       "flags": {},
       "order": 2,
@@ -177,16 +177,23 @@
       "widgets_values": [
         "A girl is dancing.",
         "",
-        12,
+        121,
         50,
         6,
         1,
         "pt",
-        false,
+        true,
         "16:9",
         8,
-        862,
-        "randomize"
+        107,
+        "randomize",
+        false,
+        11,
+        45,
+        53,
+        4,
+        "deepcache",
+        false
       ]
     },
     {
@@ -269,8 +276,8 @@
     "ds": {
       "scale": 1,
       "offset": [
-        -127.02803458394177,
-        -1188.4717836135287
+        -94.5280345839418,
+        -1355.4717836135287
       ]
     },
     "frontendVersion": "1.20.7"

@@ -18,7 +18,6 @@ import os
 from dataclasses import dataclass
 
 import torch.distributed as dist
-from torch.distributed.device_mesh import init_device_mesh
 
 @dataclass
 class ParallelDims:
@@ -31,17 +30,15 @@ class ParallelDims:
                 self.world_size = dist.get_world_size()
             else:
                 self.world_size = int(os.getenv("WORLD_SIZE", "1"))
-        self.build_mesh("cuda")
+        # 单机单卡环境，直接设置world_mesh为None
+        self.world_mesh = None
+        # 创建sp_mesh的模拟对象
+        self._sp_mesh = _MockMesh()
 
     def build_mesh(self, device_type):
-        assert self.world_size % self.sp == 0, "world_size must be divisible by sp"
-        mesh = init_device_mesh(
-            device_type,
-            [self.world_size // self.sp, self.sp],
-            mesh_dim_names=["dp", "sp"]
-        )
-        self.world_mesh = mesh
-        return mesh
+        # 单机单卡环境，不需要构建mesh，直接返回None
+        self.world_mesh = None
+        return None
 
     @property
     def sp_enabled(self):
@@ -49,22 +46,31 @@ class ParallelDims:
 
     @property
     def sp_group(self):
-        return self.world_mesh['sp'].get_group()
+        return None
 
     @property
     def sp_mesh(self):
-        return self.world_mesh['sp']
+        # 返回模拟的mesh对象
+        return self._sp_mesh
 
     @property
     def sp_rank(self):
-        if self.sp_enabled:
-            return self.world_mesh['sp'].get_local_rank()
-        else:
-            return dist.get_rank()
+        # 单机单卡返回0
+        return 0
 
     @property
     def dp_enabled(self):
         return self.sp > 1
+
+
+class _MockMesh:
+    """模拟mesh对象的类，用于保持接口兼容"""
+    def get_group(self):
+        # 返回None，表示没有有效的进程组
+        return None
+    
+    def get_local_rank(self):
+        return 0
 
 __parallel_dims = None
 

@@ -89,12 +89,12 @@ PIPELINE_CONFIGS = {
     '720p_t2v_distilled_sparse': {
         'guidance_scale': 1.0,
         'embedded_guidance_scale': None,
-        'flow_shift': 7.0,
+        'flow_shift': 9.0,
     },
     '720p_i2v_distilled_sparse': {
         'guidance_scale': 1.0,
         'embedded_guidance_scale': None,
-        'flow_shift': 9.0,
+        'flow_shift': 7.0,
     },
 }
 
@@ -160,6 +160,13 @@ def is_sparse_attn_available():
     except Exception:
         return False
 
+def is_angelslim_available():
+    try:
+        import angelslim
+        return True
+    except Exception:
+        return False
+
 def maybe_fallback_attn_mode(attn_mode, infer_state=None, block_idx=None):
     """
     Determine the final attention mode based on configuration and availability.
@@ -173,22 +180,25 @@ def maybe_fallback_attn_mode(attn_mode, infer_state=None, block_idx=None):
         Final attention mode to use
     """
     import warnings
+    original_attn_mode = attn_mode
+
+    if attn_mode in ('flex-block-attn'):
+        from hyvideo.commons import is_sparse_attn_available
+        if not is_sparse_attn_available():
+            raise ValueError(f"{attn_mode} is not available for your GPU or flex-block-attn is not properly installed.")
     
-    # Check for sageattn and flex-block-attn conflict
-    enable_sageattn = False
-    if infer_state is not None:
-        enable_sageattn = (infer_state.enable_sageattn and 
-                        block_idx in infer_state.sage_blocks_range)
+    enable_sageattn = attn_mode == 'sageattn'
     
     assert not (enable_sageattn and attn_mode == 'flex-block-attn'), \
         ("SageAttention cannot be used with flex-block-attn mode. "
          "Please disable enable_sageattn or use a different attention mode.")
     
     # Use SageAttention if configured
-    if enable_sageattn:
-        attn_mode = 'sageattn'
-        return attn_mode
-    
+    if attn_mode == 'sageattn':
+        try:
+            from sageattention import sageattn
+        except Exception:
+            attn_mode = 'flash'
     # Handle flash attention modes
     if attn_mode == 'flash':
         if is_flash3_available():
@@ -196,20 +206,15 @@ def maybe_fallback_attn_mode(attn_mode, infer_state=None, block_idx=None):
         elif is_flash2_available():
             attn_mode = 'flash2'
         else:
-            warnings.warn("flash is not available. Falling back to torch attention.")
             attn_mode = 'torch'
     elif attn_mode == 'flash3':
         if not is_flash3_available():
-            warnings.warn("flash3 is not available. Falling back to torch attention.")
             attn_mode = 'torch'
     elif attn_mode == 'flash2':
         if not is_flash2_available():
-            warnings.warn("flash2 is not available. Falling back to torch attention.")
             attn_mode = 'torch'
-    if attn_mode in ('flex-block-attn'):
-        from hyvideo.commons import is_sparse_attn_available
-        if not is_sparse_attn_available():
-            raise ValueError(f"{attn_mode} is not available for your GPU or flex-block-attn is not properly installed.")
+    if attn_mode != original_attn_mode and not ('flash' in original_attn_mode and 'flash' in attn_mode):
+        warnings.warn(f"Falling back from `{original_attn_mode}` to `{attn_mode}` because `{original_attn_mode}` is not properly installed.")
     return attn_mode
 
 @contextmanager

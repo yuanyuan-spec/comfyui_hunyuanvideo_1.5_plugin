@@ -28,13 +28,14 @@ from diffusers.utils.torch_utils import randn_tensor
 from diffusers.utils import BaseOutput
 from torch import distributed as dist
 import subprocess
-
+from diffusers.utils.torch_utils import randn_tensor
 
 from hyvideo.utils.multitask_utils import (
     merge_tensor_by_mask,
 )
 from hyvideo.commons import (
-    PRECISION_TO_TYPE, auto_offload_model, get_gpu_memory,
+    PRECISION_TO_TYPE, auto_offload_model, get_gpu_memory,     is_sparse_attn_supported, is_angelslim_available
+
 
 )
 from hyvideo.models.autoencoders import hunyuanvideo_15_vae
@@ -56,6 +57,7 @@ from hyvideo.models.autoencoders import hunyuanvideo_15_vae
 from hyvideo.models.text_encoders.byT5 import load_glyph_byT5_v2
 from hyvideo.models.text_encoders.byT5.format_prompt import MultilingualPromptFormat
 from hyvideo.commons.parallel_states import get_parallel_state
+from hyvideo.commons.infer_state import get_infer_state
 
 import comfy.model_management as mm
 import comfy.utils
@@ -203,15 +205,15 @@ class HyVideoTransformerLoader:
             },
             "optional": {
                 "attn_mode": (["flash", "flex-block-attn", "ptm_sparse_attn","flash3",], {"default": "flash"}),
+                "force_sparse_attn": ("BOOLEAN", {"default": False, "tooltip": "Force to use sparse attention even if the model is not trained with sparse attention."}),
             }
         }
 
     RETURN_TYPES = ("HYVID15TRANSFORMER", "HYVID15TRANSFORMERCONFIG",)
-    RETURN_NAMES = ("model", "config", )
     FUNCTION = "loadmodel"
     CATEGORY = "HunyuanVideoWrapper1.5"
 
-    def loadmodel(self, path, resolution, task_type, transformer_dtype, attn_mode="flash"):
+    def loadmodel(self, path, resolution, task_type, transformer_dtype, attn_mode="flash", force_sparse_attn=False):
         device = torch.device('cuda')
         transformer_version = f"{resolution}_{task_type}"
         if path == "None":
@@ -222,6 +224,16 @@ class HyVideoTransformerLoader:
                 run_cmd(f"hf download tencent/HunyuanVideo-1.5 --include \"transformer/{transformer_version}/*\" --local-dir {tmp_path}")
                 shutil.move(os.path.join(tmp_path, "transformer",transformer_version), path)
                 # run_cmd(f"mv {tmp_path}/transformer {path}")
+
+        if force_sparse_attn:
+            if not is_sparse_attn_supported():
+                raise RuntimeError(f"Current GPU is {torch.cuda.get_device_properties(0).name}, which does not support sparse attention.")
+            if transformer.config.attn_mode != 'flex-block-attn':
+                loguru.logger.warning(
+                    f"The transformer loaded ({transformer_version}) is not trained with sparse attention. Forcing to use sparse attention may lead to artifacts in the generated video."
+                    f"To enable sparse attention, we recommend loading `{transformer_version}_distilled_sparse` instead."
+                )
+            transformer.set_attn_mode('flex-block-attn')
 
         transformer = HunyuanVideo_1_5_DiffusionTransformer.from_pretrained(os.path.join(path, transformer_version), torch_dtype=dtype_options[transformer_dtype]).to(device)
         transformer.set_attn_mode(attn_mode)
@@ -235,6 +247,7 @@ class HyVideoVaeLoader:
                 "path": (get_immediate_subdirectories(get_model_dir_path("vae")),),
             },
             "optional": {
+                "enable_tile_parallelism": ("BOOLEAN", {"default": True, "tooltip": "Enable tile parallelism for VAE inference to reduce memory usage."}),
             }
         }
 
@@ -243,7 +256,7 @@ class HyVideoVaeLoader:
     FUNCTION = "loadmodel"
     CATEGORY = "HunyuanVideoWrapper1.5"
 
-    def loadmodel(self, path):
+    def loadmodel(self, path, enable_tile_parallelism=True):
         device = torch.device('cuda')
         vae_inference_config = self._get_vae_inference_config()
         if path == "None":
@@ -259,6 +272,8 @@ class HyVideoVaeLoader:
             torch_dtype=vae_inference_config['dtype']
         ).to(device)
         vae.set_tile_sample_min_size(vae_inference_config['sample_size'], vae_inference_config['tile_overlap_factor'])
+        if enable_tile_parallelism:
+            vae.enable_tile_parallelism()
 
         return (vae,)
     
@@ -266,9 +281,9 @@ class HyVideoVaeLoader:
         if memory_limitation is None:
             memory_limitation = get_gpu_memory()
         GB = 1024 * 1024 * 1024
-        if memory_limitation < 23 * GB:
-            sample_size = 160
-            tile_overlap_factor = 0.2
+        if memory_limitation < 28 * GB:
+            sample_size = 128
+            tile_overlap_factor = 0.25
             dtype = torch.float16
         else:
             sample_size = 256
@@ -488,15 +503,14 @@ class HyVideoCFG:
     DESCRIPTION = "To use CFG with HunyuanVideo"
 
     def config(self, prompt, negative_prompt, guidance_scale, num_videos_per_prompt, video_length, seed, transformer_config, flow_shift=None, prompt_rewrite=False, reference_image=None,task_type="i2v",sr_transformer_config=None): 
-        
+
         if flow_shift is None or flow_shift == 0:
             if isinstance(transformer_config.ideal_resolution, str) and transformer_config.ideal_resolution == "480p":
                 flow_shift = 5.0
             else:
                 flow_shift = 7.0
     
-        device = mm.get_torch_device()
-        generator = torch.Generator(device=device).manual_seed(seed)
+        generator = torch.Generator(device=torch.device('cpu')).manual_seed(seed)
         self.prompt = prompt
         self.reference_image = reference_image
         self.task_type = task_type
@@ -1332,9 +1346,7 @@ class HyVideoLatentsPrepare:
             )
 
         if latents is None:
-            latents = randn_tensor(
-                shape, generator=generator, device=device, dtype=dtype
-            )
+            latents = torch.randn(shape, generator=generator, device=torch.device('cpu'), dtype=dtype).to(device)
         else:
             latents = latents.to(device)
 
@@ -1366,6 +1378,13 @@ class HyVideoTransformer:
                 "guidance_rescale" : ("FLOAT", {"default": 0.0}),
                 "autocast_enabled": ("BOOLEAN", {"default": True}),
                 "eta": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.01} ),
+                "enable_cache": ("BOOLEAN", {"default": False, "tooltip": "Enable cache."}),
+                "cache_start_step": ("INT", {"default": 11, "tooltip": "Cache start step."}),
+                "cache_end_step": ("INT", {"default": 45, "tooltip": "Cache end step."}),
+                "no_cache_block_id": ("INT", {"default": 53, "tooltip": "No cache block id."}),
+                "cache_step_interval": ("INT", {"default": 4, "tooltip": "Cache step interval."}),
+                "cache_type": (["deepcache", "teacache", "taylorcache"], {"default": "deepcache", "tooltip": "Cache type."}),
+                "enable_sageattn": ("BOOLEAN", {"default": False, "tooltip": "Enable sageattn."}),
             }
         }
     RETURN_TYPES = ("HYVID15TRANSFORMERLATENT", )
@@ -1373,8 +1392,7 @@ class HyVideoTransformer:
     FUNCTION = "process"
     CATEGORY = "HunyuanVideoWrapper1.5"
 
-    def process(self, hyvid_cfg, n_tokens, steps, transformer, vae_concat, hyvid_embeds, vision_states, extra_kwargs, latents_dict, target_dtype, embedded_guidance_scale=None, autocast_enabled=True, guidance_rescale=0.0, eta=0.0):
-        
+    def process(self, hyvid_cfg, n_tokens, steps, transformer, vae_concat, hyvid_embeds, vision_states, extra_kwargs, latents_dict, target_dtype, embedded_guidance_scale=None, autocast_enabled=True, guidance_rescale=0.0, eta=0.0, enable_cache=False, cache_start_step=11, cache_end_step=45, cache_step_interval=4, cache_type="deepcache", enable_sageattn=False,no_cache_block_id=53):
         device = torch.device('cuda')
         enable_offloading = False
         # print("vae_concat: ", vae_concat)
@@ -1401,11 +1419,50 @@ class HyVideoTransformer:
         num_warmup_steps = len(timesteps) - num_inference_steps * hyvid_cfg["scheduler"].order
         latents = latents_dict["latents"]
         cond_latents = vae_concat
-        
+
+        if enable_cache:
+            if not is_angelslim_available():
+                raise RuntimeError("Please install angelslim==0.2.1 via `pip install angelslim==0.2.1` to enable cache.")
+            from angelslim.compressor.diffusion import DeepCacheHelper, TeaCacheHelper, TaylorCacheHelper
+            no_cache_steps = list(range(0, cache_start_step)) + list(range(cache_start_step, cache_end_step, cache_step_interval)) + list(range(cache_end_step, steps))
+            cache_type = cache_type
+            if cache_type == 'deepcache':
+                no_cache_block_id = {"double_blocks":no_cache_block_id}
+                cache_helper = DeepCacheHelper(
+                    double_blocks=transformer.double_blocks,
+                    no_cache_steps=no_cache_steps,
+                    no_cache_block_id=no_cache_block_id,
+                )
+            elif cache_type == 'teacache':
+                cache_helper = TeaCacheHelper(
+                    double_blocks=transformer.double_blocks,
+                    no_cache_steps=no_cache_steps,
+                )
+            elif cache_type == 'taylorcache':
+                cache_helper = TaylorCacheHelper(
+                    double_blocks=transformer.double_blocks,
+                    no_cache_steps=no_cache_steps,
+                )
+            else:
+                raise ValueError(f"Unknown cache type: {cache_type}")
+            cache_helper.enable()
+        else:
+            cache_helper = None
+
+        cache_helper = getattr(self, 'cache_helper', None)  #TODO: remove this
+        if cache_helper is not None:
+            cache_helper.clear_states()
+            assert num_inference_steps == get_infer_state().total_steps
+
+        if enable_sageattn:
+            transformer.set_attn_mode('sageattn')
+
         with  auto_offload_model(transformer, device, enabled=enable_offloading):
             progress_bar = self._progress_bar(total=num_inference_steps)
             self.do_classifier_free_guidance = hyvid_cfg["guidance_scale"] > 1
             for i, t in enumerate(timesteps):
+                if cache_helper is not None:
+                    cache_helper.cur_timestep = i
                 latents_concat = torch.concat([latents, cond_latents], dim=1)
 
                 latent_model_input = torch.cat([latents_concat] * 2) if self.do_classifier_free_guidance else latents_concat

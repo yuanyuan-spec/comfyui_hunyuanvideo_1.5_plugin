@@ -15,6 +15,7 @@
 # See the License for the specific language governing permissions and limitations under the License.
 
 
+import psutil
 import inspect
 import os
 import random
@@ -37,7 +38,6 @@ from diffusers.models import AutoencoderKL
 from diffusers.pipelines.pipeline_utils import DiffusionPipeline
 from diffusers.schedulers import KarrasDiffusionSchedulers
 from diffusers.utils import BaseOutput, deprecate, logging
-from diffusers.utils.torch_utils import randn_tensor
 
 from hyvideo.commons import (
     PIPELINE_CONFIGS,
@@ -48,6 +48,7 @@ from hyvideo.commons import (
     get_rank,
     is_flash3_available,
     is_sparse_attn_supported,
+    is_angelslim_available,
 )
 from hyvideo.commons.parallel_states import get_parallel_state
 
@@ -71,6 +72,7 @@ from hyvideo.utils.data_utils import (
 from hyvideo.utils.multitask_utils import (
     merge_tensor_by_mask,
 )
+from hyvideo.commons.infer_state import get_infer_state
 
 from .pipeline_utils import retrieve_timesteps, rescale_noise_cfg
 
@@ -464,9 +466,7 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
             )
 
         if latents is None:
-            latents = randn_tensor(
-                shape, generator=generator, device=device, dtype=dtype
-            )
+            latents = torch.randn(shape, generator=generator, device=torch.device('cpu'), dtype=dtype).to(device)
         else:
             latents = latents.to(device)
 
@@ -899,6 +899,7 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
         output_type: Optional[str] = "pt",
         return_dict: bool = True,
         return_pre_sr_video: bool = False,
+        enable_vae_tile_parallelism: bool = True,
         **kwargs,
     ):
         r"""
@@ -1013,11 +1014,19 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
         else:
             self.scheduler = self._create_scheduler(flow_shift)
 
+        if seed is None or seed == -1:
+            seed = random.randint(100000, 999999)
+
         if get_parallel_state().sp_enabled:
             assert seed is not None
+            if dist.is_initialized():
+                obj_list = [seed]
+                group_src_rank = dist.get_global_rank(get_parallel_state().sp_group, 0)
+                dist.broadcast_object_list(obj_list, src=group_src_rank, group=get_parallel_state().sp_group)
+                seed = obj_list[0]
 
         if generator is None and seed is not None:
-            generator = torch.Generator(device=self.execution_device).manual_seed(seed)
+            generator = torch.Generator(device=torch.device('cpu')).manual_seed(seed)
 
         if reference_image is not None:
             if self.ideal_resolution is not None and target_resolution != self.ideal_resolution:
@@ -1070,7 +1079,7 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
                 f"Shift:                     {flow_shift}\n"
                 f"Seed:                      {seed}\n"
                 f"Video Resolution:          {width} x {height}\n"
-                f'Attn mode:                 {self.transformer.config.attn_mode}\n'
+                f'Attn mode:                 {self.transformer.attn_mode}\n'
                 f"Transformer dtype:         {self.transformer.dtype}\n"
                 f"Sampling Steps:            {num_inference_steps}\n"
                 f"Use Meanflow:              {self.use_meanflow}\n"
@@ -1174,8 +1183,15 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
         num_warmup_steps = len(timesteps) - num_inference_steps * self.scheduler.order
         self._num_timesteps = len(timesteps)
 
+        cache_helper = getattr(self, 'cache_helper', None)
+        if cache_helper is not None:
+            cache_helper.clear_states()
+            assert num_inference_steps == get_infer_state().total_steps
+
         with self.progress_bar(total=num_inference_steps) as progress_bar, auto_offload_model(self.transformer, self.execution_device, enabled=self.enable_offloading):
             for i, t in enumerate(timesteps):
+                if cache_helper is not None:
+                    cache_helper.cur_timestep = i
                 latents_concat = torch.concat([latents, cond_latents], dim=1)
                 latent_model_input = torch.cat([latents_concat] * 2) if self.do_classifier_free_guidance else latents_concat
 
@@ -1251,6 +1267,7 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
 
                 lq_latents=latents,
                 reference_image=user_reference_image,
+                enable_vae_tile_parallelism=enable_vae_tile_parallelism,
             )
 
         if output_type == "latent":
@@ -1268,7 +1285,7 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
             else:
                 latents = latents / self.vae.config.scaling_factor
 
-            if hasattr(self.vae, 'enable_tile_parallelism'):
+            if enable_vae_tile_parallelism and hasattr(self.vae, 'enable_tile_parallelism'):
                 self.vae.enable_tile_parallelism()
 
             if return_pre_sr_video or not enable_sr:
@@ -1313,9 +1330,13 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
 
     @classmethod
     def load_sr_transformer_upsampler(cls, transformer_path,upsampler_path, sr_version, transformer_dtype=torch.bfloat16, device=None):
-        transformer = HunyuanVideo_1_5_DiffusionTransformer.from_pretrained(os.path.join(transformer_path,  sr_version), torch_dtype=transformer_dtype).to(device)
+        transformer = HunyuanVideo_1_5_DiffusionTransformer.from_pretrained(
+            transformer_path, 
+            low_cpu_mem_usage=True, 
+            torch_dtype=transformer_dtype
+        ).to(device)
         upsampler_cls = SRTo720pUpsampler if "720p" in sr_version else SRTo1080pUpsampler
-        upsampler = upsampler_cls.from_pretrained(os.path.join(upsampler_path,  sr_version)).to(device)
+        upsampler = upsampler_cls.from_pretrained(upsampler_path).to(device)
         return transformer, upsampler
 
     def create_sr_pipeline(self, transformer_path,upsampler_path, sr_version, transformer_dtype=torch.bfloat16, device=None):
@@ -1343,6 +1364,18 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
             **SR_PIPELINE_CONFIGS[sr_version],
         )
 
+    @staticmethod
+    def get_transformer_version(resolution, task, cfg_distilled=False, step_distilled=False, sparse_attn=False):
+        # Build transformer_version based on flags
+        # Note: sparse attention requires distilled model, so if sparse_attn is enabled,
+        # we automatically include distilled in the version string
+        transformer_version = f'{resolution}_{task}'
+        if cfg_distilled or sparse_attn:
+            transformer_version += '_distilled'
+        if sparse_attn:
+            transformer_version += '_sparse'
+        return transformer_version
+
     @classmethod
     def create_pipeline(cls, pretrained_model_name_or_path, transformer_version, create_sr_pipeline=False, force_sparse_attn=False, transformer_dtype=torch.bfloat16, enable_offloading=None, enable_group_offloading=None, overlap_group_offloading=True, device=None, **kwargs):
         # use snapshot download here to get it working from from_pretrained
@@ -1364,7 +1397,6 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
             offloading_config = cls.get_offloading_config()
             enable_offloading = offloading_config['enable_offloading']
             enable_group_offloading = offloading_config['enable_group_offloading']
-
 
 
         if enable_offloading:
@@ -1389,12 +1421,17 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
             os.path.join(cached_folder, "transformer", transformer_version), torch_dtype=transformer_dtype, 
             low_cpu_mem_usage=True,
         ).to(transformer_init_device)
+
         vae = hunyuanvideo_15_vae.AutoencoderKLConv3D.from_pretrained(
             os.path.join(cached_folder, "vae"), 
             torch_dtype=vae_inference_config['dtype']
         ).to(device)
         vae.set_tile_sample_min_size(vae_inference_config['sample_size'], vae_inference_config['tile_overlap_factor'])
         scheduler = FlowMatchDiscreteScheduler.from_pretrained(os.path.join(cached_folder, "scheduler"))
+
+        infer_state = get_infer_state()
+        if infer_state.enable_sageattn:
+            transformer.set_attn_mode('sageattn')
 
         if force_sparse_attn:
             if not is_sparse_attn_supported():
@@ -1414,11 +1451,44 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
             'onload_device': torch.device('cuda'),
             'num_blocks_per_group': 4,
         }
+
+
         if overlap_group_offloading:
             # Using streams is only supported for num_blocks_per_group=1
             group_offloading_kwargs['num_blocks_per_group'] = 1
             group_offloading_kwargs['use_stream'] = True
-            group_offloading_kwargs['record_stream'] = True
+
+
+        loguru.logger.info(f"{enable_offloading=} {enable_group_offloading=} {overlap_group_offloading=}")
+
+        if infer_state.enable_cache:
+            if not is_angelslim_available():
+                raise RuntimeError("Please install angelslim==0.2.1 via `pip install angelslim==0.2.1` to enable cache.")
+            from angelslim.compressor.diffusion import DeepCacheHelper, TeaCacheHelper, TaylorCacheHelper
+            no_cache_steps = list(range(0, infer_state.cache_start_step)) + list(range(infer_state.cache_start_step, infer_state.cache_end_step, infer_state.cache_step_interval)) + list(range(infer_state.cache_end_step, infer_state.total_steps))
+            cache_type = infer_state.cache_type
+            if cache_type == 'deepcache':
+                no_cache_block_id = {"double_blocks":infer_state.no_cache_block_id}
+                cache_helper = DeepCacheHelper(
+                    double_blocks=transformer.double_blocks,
+                    no_cache_steps=no_cache_steps,
+                    no_cache_block_id=no_cache_block_id,
+                )
+            elif cache_type == 'teacache':
+                cache_helper = TeaCacheHelper(
+                    double_blocks=transformer.double_blocks,
+                    no_cache_steps=no_cache_steps,
+                )
+            elif cache_type == 'taylorcache':
+                cache_helper = TaylorCacheHelper(
+                    double_blocks=transformer.double_blocks,
+                    no_cache_steps=no_cache_steps,
+                )
+            else:
+                raise ValueError(f"Unknown cache type: {cache_type}")
+            cache_helper.enable()
+        else:
+            cache_helper = None
 
         if enable_group_offloading:
             assert enable_offloading
@@ -1440,6 +1510,8 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
             enable_offloading=enable_offloading,
             **PIPELINE_CONFIGS[transformer_version],
         )
+        if cache_helper is not None:
+            pipeline.cache_helper = cache_helper
 
         if create_sr_pipeline:
             sr_version = TRANSFORMER_VERSION_TO_SR_VERSION[transformer_version]
@@ -1447,6 +1519,10 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
             pipeline.sr_pipeline = sr_pipeline
             if enable_group_offloading:
                 sr_pipeline.transformer.enable_group_offload(**group_offloading_kwargs)
+
+            if infer_state.enable_sageattn:
+                sr_pipeline.transformer.set_attn_mode('sageattn')
+
 
         return pipeline
 
@@ -1471,9 +1547,9 @@ class HunyuanVideo_1_5_Pipeline(DiffusionPipeline):
         if memory_limitation is None:
             memory_limitation = get_gpu_memory()
         GB = 1024 * 1024 * 1024
-        if memory_limitation < 23 * GB:
-            sample_size = 160
-            tile_overlap_factor = 0.2
+        if memory_limitation < 28 * GB:
+            sample_size = 128
+            tile_overlap_factor = 0.25
             dtype = torch.float16
         else:
             sample_size = 256

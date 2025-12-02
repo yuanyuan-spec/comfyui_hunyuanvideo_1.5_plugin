@@ -185,6 +185,7 @@ def sequence_parallel_attention(q, k, v,
         query = query.transpose(1, 2)  # B * Head_num * length * dim
         key = key.transpose(1, 2)      # B * Head_num * length * dim
         value = value.transpose(1, 2)  # B * Head_num * length * dim
+
         if attn_mask is not None:
             attn_mask1 = einops.rearrange(attn_mask, 'b l -> b 1 l 1')
             attn_mask2 = einops.rearrange(attn_mask1, 'b 1 l 1 -> b 1 1 l')

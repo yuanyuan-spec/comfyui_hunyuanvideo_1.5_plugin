@@ -24,6 +24,8 @@ from loguru import logger
 from diffusers.models import ModelMixin
 from diffusers.configuration_utils import ConfigMixin, register_to_config
 
+from hyvideo.commons import maybe_fallback_attn_mode
+
 from .modules.activation_layers import get_activation_layer
 from .modules.norm_layers import get_norm_layer
 from .modules.embed_layers import TimestepEmbedder, PatchEmbed, TextProjection, VisionProjection
@@ -883,6 +885,7 @@ class HunyuanVideo_1_5_DiffusionTransformer(ModelMixin, ConfigMixin):
         return imgs
 
     def set_attn_mode(self, attn_mode: str):
+        attn_mode = maybe_fallback_attn_mode(attn_mode)
         self.attn_mode = attn_mode
         for block in self.double_blocks:
             block.attn_mode = attn_mode 
