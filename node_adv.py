@@ -491,7 +491,6 @@ class HyVideoCFG:
                 "transformer_config": ("HYVID15TRANSFORMERCONFIG", ),
                 "task_type": (["t2v", "i2v"], {"default": "i2v"}),
                 "sr_transformer_config": ("HYVID15TRANSFORMERCONFIG", {"default": None}),
-                "prompt_rewrite":("BOOLEAN", {"default": False, "tooltip": "Rewrite prompt."}),
                 "reference_image": ("IMAGE", {"default": None, "tooltip": "Reference image."}),
             }
         }
